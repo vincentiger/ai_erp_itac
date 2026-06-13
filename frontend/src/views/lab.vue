@@ -351,23 +351,28 @@
                         </div>
 
                         <div
-                          v-if="['mechanical', 'functional'].includes(cate.key) && isTestItemSelected(cate.key, item.name)"
-                          class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
+                          v-if="isStandardRangeItem(cate.key, item.name)"
+                          class="mt-3"
                         >
-                          <el-input
-                            v-model="form.test_standard_ranges[testStandardKey(item.name)].min"
-                            inputmode="decimal"
-                            placeholder="標準值下限"
-                          >
-                            <template #prepend>下限</template>
-                          </el-input>
-                          <el-input
-                            v-model="form.test_standard_ranges[testStandardKey(item.name)].max"
-                            inputmode="decimal"
-                            placeholder="標準值上限"
-                          >
-                            <template #prepend>上限</template>
-                          </el-input>
+                          <div class="mb-1 text-xs font-semibold text-slate-600">標準值</div>
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <el-input
+                              v-model="form.test_standard_ranges[testStandardKey(item.name)].min"
+                              inputmode="decimal"
+                              placeholder="請輸入下限"
+                              :disabled="!isTestItemSelected(cate.key, item.name)"
+                            >
+                              <template #prepend>下限</template>
+                            </el-input>
+                            <el-input
+                              v-model="form.test_standard_ranges[testStandardKey(item.name)].max"
+                              inputmode="decimal"
+                              placeholder="請輸入上限"
+                              :disabled="!isTestItemSelected(cate.key, item.name)"
+                            >
+                              <template #prepend>上限</template>
+                            </el-input>
+                          </div>
                         </div>
 
                         <div
@@ -485,15 +490,18 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="canSeeOutsource" class="border rounded-xl p-3 sm:col-span-2">
+                <div class="border rounded-xl p-3 sm:col-span-2">
                   <div class="font-semibold mb-2">外包需求（主管）</div>
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <el-select v-model="form.outsource.has" class="w-full">
+                    <el-select v-model="form.outsource.has" class="w-full" :disabled="!isSupervisorUser">
                       <el-option label="無" value="無" />
                       <el-option label="有" value="有" />
                     </el-select>
-                    <el-input v-model="form.outsource.items" placeholder="外包項目" />
-                    <el-input v-model="form.outsource.vendor_info" placeholder="外包廠商 / 備註" />
+                    <el-input v-model="form.outsource.items" placeholder="外包項目" :disabled="!isSupervisorUser" />
+                    <el-input v-model="form.outsource.vendor_info" placeholder="外包廠商 / 備註" :disabled="!isSupervisorUser" />
+                  </div>
+                  <div v-if="!isSupervisorUser" class="mt-2 text-xs text-slate-500">
+                    此欄由主管審核時填寫。
                   </div>
                 </div>
                 <div class="border rounded-xl p-3 sm:col-span-2">
@@ -764,7 +772,6 @@ const isSupervisorUser = computed(() => {
   ].map(v => String(v || '')).join(' ')
   return authority === 12 || text.includes('主管')
 })
-const canSeeOutsource = computed(() => isSupervisorUser.value)
 const drawingAttachmentInput = ref(null)
 const customerSignatureInput = ref(null)
 const managerSignatureInput = ref(null)
@@ -838,12 +845,28 @@ const testStandardKeyMap = {
   表面硬度: 'surface_hardness',
   滲碳深度: 'carburizing_depth',
   脫碳測試: 'decarb',
+  脫探測試: 'decarb',
+  脫碳層測試: 'decarb',
   '延展性(鎚擊)': 'ductility',
+  '延展性（鎚擊）': 'ductility',
+  延展性: 'ductility',
   扭力: 'torque',
   氫脆化: 'hydrogen',
   攻速: 'drilling_speed',
   旋入: 'drive_torque',
 }
+
+const standardRangeItemKeys = new Set([
+  'core_hardness',
+  'surface_hardness',
+  'carburizing_depth',
+  'decarb',
+  'ductility',
+  'torque',
+  'hydrogen',
+  'drilling_speed',
+  'drive_torque',
+])
 
 function hardnessInspectionKey(itemName) {
   return itemName === '心部硬度' ? 'core' : 'surface'
@@ -853,14 +876,30 @@ function testStandardKey(itemName) {
   return testStandardKeyMap[itemName] || itemName
 }
 
+function isStandardRangeItem(categoryKey, itemName) {
+  return ['mechanical', 'functional'].includes(categoryKey) &&
+    standardRangeItemKeys.has(testStandardKey(String(itemName || '').trim()))
+}
+
 function createBlankTestStandardRanges() {
   return Object.fromEntries(
-    Object.values(testStandardKeyMap).map(key => [key, { min: '', max: '' }])
+    [...standardRangeItemKeys].map(key => [key, { min: '', max: '' }])
   )
 }
 
+function ensureTestStandardRanges(categories = state.testConfigCategories) {
+  for (const cate of Array.isArray(categories) ? categories : []) {
+    for (const item of Array.isArray(cate?.items) ? cate.items : []) {
+      if (!isStandardRangeItem(cate.key, item.name)) continue
+      const key = testStandardKey(item.name)
+      if (!form.test_standard_ranges[key]) {
+        form.test_standard_ranges[key] = { min: '', max: '' }
+      }
+    }
+  }
+}
+
 function onReportNeedChange(value) {
-  form.report.customer_report_logo = value === 'TAF認證標誌' ? 'with_logo' : 'without_logo'
   if (value !== '其它') form.report.needs_other = ''
 }
 
@@ -959,8 +998,7 @@ function createBlankLabForm() {
     rule_type: '',                  // '依顧客提供規範' 或 '法規標準'
     rule_has_drawing: false,        // true / false
     rule_drawing: '',
-    rule_spec: '',
-    customer_report_logo: 'without_logo'
+    rule_spec: ''
   },
 
   outsource: {
@@ -1070,7 +1108,6 @@ function assignFormValues(values = {}) {
       ...form.report,
       ...(values.report || {}),
       needs: reportNeed,
-      customer_report_logo: reportNeed === 'TAF認證標誌' ? 'with_logo' : 'without_logo',
     },
     outsource: {
       ...form.outsource,
@@ -1527,9 +1564,6 @@ async function saveDraftReal() {
   state.saving = true
 
   try {
-    form.report.customer_report_logo = form.report.needs === 'TAF認證標誌'
-      ? 'with_logo'
-      : 'without_logo'
     form.salt_spray_hours = form.salt_spray_spec.white_hours || form.salt_spray_spec.red_hours || ''
     form.salt_spray_type = form.salt_spray_spec.white_hours && form.salt_spray_spec.red_hours
       ? '白鏽、紅鏽'
@@ -1792,6 +1826,7 @@ async function loadTestConfig() {
     const json = await resp.json()
     if (!json.ok) throw new Error(json.msg || '試驗項目設定載入失敗')
     state.testConfigCategories = cloneTestConfigCategories(json.categories || [])
+    ensureTestStandardRanges()
     syncAllTestMethods()
   } catch (e) {
     console.error(e)

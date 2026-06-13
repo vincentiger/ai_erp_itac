@@ -274,6 +274,7 @@ const routeMap = {
   labmech: '/lab/mech',
   lab_mech: '/lab/mech',
   lab_mech_standard: '/lab/mech/standard',
+  labmechstandard: '/lab/mech/standard',
   mech_standard: '/lab/mech/standard',
   lab_mech_judge: '/lab/mech/judge',
   labmechjudge: '/lab/mech/judge',
@@ -286,6 +287,13 @@ const routeMap = {
   mech_manage: '/lab/mech/manage',
   customer_edit: '/customer_edit',
   customer_del: '/customer_del',
+}
+
+const menuTitleRouteMap = {
+  委託測試單列表: '/lab/view',
+  委託測試單查詢: '/lab/view',
+  新增委託測試單: '/lab',
+  設定機械性質檢驗記錄表: '/lab/mech/standard',
 }
 
 const handleMenuClick = (targetName, title = null) => {
@@ -310,13 +318,17 @@ const handleMenuClick = (targetName, title = null) => {
   }
 
   const key = normalizeVueKey(targetName)
-  if (!key) return
+  const titleKey = String(title || '').trim()
+  const routePath = menuTitleRouteMap[titleKey] || routeMap[key] || (key ? `/${key}` : '')
+  if (!routePath) {
+    console.warn('[menu] 找不到對應頁面:', { targetName, title })
+    return
+  }
 
   const APP_BASE = import.meta.env.BASE_URL || '/ai/'
   const ORIGIN = window.location.origin
   const formattedBase = APP_BASE.endsWith('/') ? APP_BASE : `${APP_BASE}/`
 
-  const routePath = routeMap[key] || `/${key}`
   currentUrl.value = `${ORIGIN}${formattedBase}#${routePath}`
 
   console.log('導航至 URL:', currentUrl.value)

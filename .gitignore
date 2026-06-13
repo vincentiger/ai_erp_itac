@@ -40,6 +40,9 @@ tmp_backend_stderr.log
 uploads/
 _tmp/
 
+tmp/
+.tmp/
+
 # =========================
 # Backup
 # =========================

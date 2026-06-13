@@ -1,12 +1,12 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title ITAC Project Update
+title ITAC Project Update and Startup
 color 0A
 
 set "ROOT=C:\ai_erp_itac"
 
 echo ==================================
-echo ITAC Project Update
+echo ITAC Project Update and Startup
 echo ==================================
 echo.
 
@@ -87,7 +87,7 @@ if exist "%ROOT%\startup.bat" (
 )
 
 echo.
-echo [7/7] Update Complete
+echo [7/7] Update and startup complete
 echo Please verify the system in the browser.
 echo.
 echo ==================================

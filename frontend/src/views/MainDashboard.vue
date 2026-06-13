@@ -23,7 +23,15 @@ const voiceEngine = createVoiceEngine(voiceRegistry)
 const router = useRouter()
 const isMobileMenuOpen = ref(false)
 
-const currentUser = ref(JSON.parse(localStorage.getItem('user')) || { name: '未登入', menus: [] })
+function readCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}')
+  } catch {
+    return {}
+  }
+}
+
+const currentUser = ref(readCurrentUser() || { name: '未登入', menus: [] })
 const selectedUser = ref('')
 const currentContext = ref('通用模式')
 const kbDialogVisible = ref(false)
@@ -727,7 +735,7 @@ onMounted(async () => {
   window.addEventListener('message', onMessage)
 
   try {
-    currentUser.value = JSON.parse(localStorage.getItem('user') || '{}')
+    currentUser.value = readCurrentUser()
   } catch {
     currentUser.value = { name: '未登入', menus: [] }
   }
@@ -738,7 +746,7 @@ onMounted(async () => {
   // ✅ 開始線上清單監看（內含 heartbeat + users poll）
   startUserListWatch(() => JSON.parse(localStorage.getItem('user') || '{}'))
 
-  if (!localStorage.getItem('user')) router.replace('/login')
+  if (!localStorage.getItem('user') && !sessionStorage.getItem('user')) router.replace('/login')
 })
 
 onUnmounted(() => {

@@ -73,16 +73,30 @@ if exist "%FRONTEND_DIR%\package.json" (
 )
 
 echo.
+echo [4.5/7] Deploy Frontend to nginx html folder...
+if exist "%FRONTEND_DIR%\dist\index.html" (
+    robocopy "%FRONTEND_DIR%\dist" "%NGINX_DIR%\html\ai" /E /MIR /R:1 /W:1 >nul
+) else (
+    echo [WARN] frontend dist not found, skip deploy.
+)
+
+echo.
 echo [5/7] Latest Commit:
 git log --oneline -1
 
 echo.
+echo.
 echo [6/7] Restart services...
-taskkill /f /im nginx.exe /t >nul 2>&1
-for /f %%I in ('netstat -aon ^| findstr ":8080" ^| findstr "LISTENING"') do (
-    for /f "tokens=5" %%P in ("%%I") do taskkill /f /pid %%P >nul 2>&1
+
+echo Stop backend on port 8080...
+for /f "tokens=5" %%P in ('netstat -ano ^| findstr ":8080" ^| findstr "LISTENING"') do (
+    echo Killing backend PID %%P
+    taskkill /f /pid %%P >nul 2>&1
 )
 
+timeout /t 2 >nul
+
+echo Start nginx...
 if exist "%NGINX_DIR%\start_nginx.bat" (
     start "" /min cmd /c ""%NGINX_DIR%\start_nginx.bat" start"
 ) else if exist "%NGINX_DIR%\nginx.exe" (
@@ -91,11 +105,21 @@ if exist "%NGINX_DIR%\start_nginx.bat" (
     echo [WARN] nginx start script not found.
 )
 
+timeout /t 3 >nul
+
+echo Start backend server...
 if exist "%BACKEND_DIR%\start_backend.bat" (
-    start "Backend" cmd /k ""%BACKEND_DIR%\start_backend.bat""
+    start "ITAC Backend" /min cmd /c ""%BACKEND_DIR%\start_backend.bat""
 ) else (
-    echo [WARN] backend start script not found.
+    start "ITAC Backend" /min cmd /c "cd /d %BACKEND_DIR% && py -3.10 server.py"
 )
+
+timeout /t 5 >nul
+
+echo Check backend port 8080...
+netstat -ano | findstr ":8080"
+echo Check nginx port 81...
+netstat -ano | findstr ":81"
 
 echo.
 echo [7/7] Update and startup complete

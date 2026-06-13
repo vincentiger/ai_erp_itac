@@ -4,6 +4,9 @@ title ITAC Project Update and Startup
 color 0A
 
 set "ROOT=C:\ai_erp_itac"
+set "NGINX_DIR=%ROOT%\nginx"
+set "BACKEND_DIR=%ROOT%\backend"
+set "FRONTEND_DIR=%ROOT%\frontend"
 
 echo ==================================
 echo ITAC Project Update and Startup
@@ -50,8 +53,8 @@ if exist "%ROOT%\requirements.txt" (
 
 echo.
 echo [4/7] Update Frontend...
-if exist "%ROOT%\frontend\package.json" (
-    cd /d "%ROOT%\frontend" || exit /b 1
+if exist "%FRONTEND_DIR%\package.json" (
+    cd /d "%FRONTEND_DIR%" || exit /b 1
     call npm install
     if errorlevel 1 (
         echo [ERROR] npm install failed
@@ -80,10 +83,18 @@ for /f %%I in ('netstat -aon ^| findstr ":8080" ^| findstr "LISTENING"') do (
     for /f "tokens=5" %%P in ("%%I") do taskkill /f /pid %%P >nul 2>&1
 )
 
-if exist "%ROOT%\startup.bat" (
-    start "" /min cmd /c ""%ROOT%\startup.bat""
+if exist "%NGINX_DIR%\start_nginx.bat" (
+    start "" /min cmd /c ""%NGINX_DIR%\start_nginx.bat" start"
+) else if exist "%NGINX_DIR%\nginx.exe" (
+    start "" "%NGINX_DIR%\nginx.exe" -c "%NGINX_DIR%\conf\nginx.conf"
 ) else (
-    echo [WARN] startup.bat not found, services not restarted automatically.
+    echo [WARN] nginx start script not found.
+)
+
+if exist "%BACKEND_DIR%\start_backend.bat" (
+    start "Backend" cmd /k ""%BACKEND_DIR%\start_backend.bat""
+) else (
+    echo [WARN] backend start script not found.
 )
 
 echo.

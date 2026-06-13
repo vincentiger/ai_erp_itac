@@ -1,0 +1,12 @@
+cd /d C:\ai_erp\frontend
+npm i axios xlsx file-saver jspdf jspdf-autotable
+
+c:\ai_erp>"C:\Users\vince\AppData\Local\Programs\Python\Python310\python.exe" -m pip install eventlet
+
+C:\ai_erp\backend\venv\Scripts\activate
+python -m pip install eventlet
+
+
+cd C:\ai_erp\frontend
+npm i jspdf-autotable
+

@@ -1,0 +1,40 @@
+backend/
+├─ app.py
+├─ config.py
+├─ extensions.py          # db, jwt, cors, cache
+├─ blueprints/
+│  ├─ auth/
+│  │  ├─ __init__.py
+│  │  └─ routes.py
+│  ├─ master/
+│  ├─ sales/
+│  ├─ purchase/
+│  ├─ inventory/
+│  ├─ report/
+│  └─ ai/
+├─ models/                # SQLAlchemy models
+├─ services/              # 商業邏輯（不要都塞 routes）
+├─ migrations/
+└─ tests/
+
+
+C:\ai_erp\backend\
+├─ app.py                         # 只做 create_app + 註冊 blueprint + 註冊 socket handlers
+├─ config.py                      # 讀 .env 的設定（你已經有了）
+├─ extensions.py                  # db / socketio / jwt / cors (統一初始化物件)
+├─ logging_config.py              # 日誌設定（只做一次）
+├─ blueprints\
+│  ├─ auth\
+│  │  ├─ __init__.py
+│  │  └─ routes.py                # (可選) REST login /me
+│  └─ master\
+│     ├─ __init__.py
+│     └─ routes.py                # 你原本 customer_bp 會搬到這
+├─ sockets\
+│  ├─ __init__.py
+│  ├─ auth_events.py              # socket login / disconnect / user list
+│  └─ ai_events.py                # socket ai_command
+└─ services\
+   └─ ai\
+      ├─ navigation.py            # ERP_PAGES + get_ai_system_prompt
+      └─ gemini_client.py         # Gemini SDK 初始化（集中）

@@ -1,0 +1,36 @@
+@startuml
+!include ../common/theme.puml
+title 新增客戶：元件/模組架構（Component）
+
+package "Frontend (Vite + Vue3 + ElementPlus)" {
+  [Dashboard.vue] as Dashboard
+  [useLongSpeechInput] as LongSpeech
+  [parseCustomerCreate] as Parser
+  [useAiSpeech] as AiSpeech
+  [socket.js] as SocketUtil
+  [customer_create.vue (iframe)] as CustomerCreate
+  [MultiInputCard] as MultiInput
+}
+
+package "Backend" {
+  [Flask API\n/api/form/customer_create/save] as ApiSave
+  [Options API\n/api/form/customer_create/options] as ApiOptions
+  [Socket Server\n(ai_command / ai_response)] as SocketSrv
+}
+
+Dashboard --> LongSpeech : stopAndCommit()\n(長語音)
+Dashboard --> Parser : 本地解析\n新增客戶指令
+Dashboard --> CustomerCreate : postMessage PREFILL\n(同源 iframe)
+CustomerCreate --> MultiInput : v-model arrays\naddresses/tel/etc.
+CustomerCreate --> ApiSave : save payload
+CustomerCreate --> ApiOptions : loadOptionsByKey
+Dashboard --> SocketUtil : connect/init events
+SocketUtil --> SocketSrv : ai_command/ai_response
+Dashboard --> AiSpeech : 語音指令導航\n(非新增客戶時)
+
+note right of CustomerCreate
+  Prefill 走 postMessage
+  儲存成功回傳 CUSTOMER_CREATE_SAVED
+end note
+
+@enduml

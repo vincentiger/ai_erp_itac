@@ -1,0 +1,53 @@
+USE [Hanlien]
+GO
+
+INSERT INTO [dbo].[customer]
+           ([refno]
+           ,[no1]
+           ,[no2]
+           ,[cate]
+           ,[country]
+           ,[company]
+           ,[short]
+           ,[headquarter]
+           ,[secret]
+           ,[URL]
+           ,[credit]
+           ,[commission]
+           ,[payment]
+           ,[employee]
+           ,[class2]
+           ,[items]
+           ,[remarks]
+           ,[add_date]
+           ,[add_person]
+           ,[quit]
+           ,[del]
+           ,[licenceNo]
+	   )
+     VALUES
+           (<refno, nchar(15),>
+           ,<no1, int,>
+           ,<no2, int,>
+           ,<cate, nvarchar(100),>
+           ,<country, nvarchar(50),>
+           ,<company, nvarchar(255),>
+           ,<short, nvarchar(255),>
+           ,<headquarter, int,>
+           ,<secret, int,>
+           ,<URL, nchar(50),>
+           ,<password, nvarchar(50),>
+           ,<credit, money,>
+           ,<commission, float,>
+           ,<payment, nvarchar(250),>
+           ,<employee, nvarchar(50),>
+           ,<class2, nchar(20),>
+           ,<items, nvarchar(50),>
+           ,<remarks, nvarchar(max),>
+           ,<add_date, datetime,>
+           ,<add_person, nvarchar(50),>
+           ,<quit, char(1),>
+           ,<del, int,>
+           ,<licenceNo, nvarchar(30),>)
+GO
+

@@ -1,0 +1,8 @@
+frontend/
+├─ src/
+│  ├─ layouts/            # DesktopLayout, MobileLayout
+│  ├─ pages/
+│  ├─ components/
+│  ├─ api/                # axios wrappers
+│  ├─ stores/
+│  └─ utils/

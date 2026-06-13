@@ -1,0 +1,62 @@
+@startuml
+!include ../common/theme.puml
+title 新增客戶：AI 本地解析 + Prefill + 儲存（Sequence）
+
+actor User as U
+participant "Dashboard.vue" as D
+participant "useLongSpeechInput\n(stopAndCommit)" as L
+participant "parseCustomerCreate()" as P
+participant "iframe\ncustomer_create.vue" as I
+participant "onParentMessage()" as M
+participant "Customer Create Form\n(reactive form)" as F
+participant "Backend API\n/ api/form/customer_create/save" as B
+participant "Dashboard onMessage\nCUSTOMER_CREATE_SAVED" as DM
+
+== AI / 語音輸入 ==
+U -> D : 輸入文字 / 點長語音
+opt 長語音模式
+  D -> L : stopAndCommit()
+  L --> D : text
+  D -> D : aiInput = text
+end
+
+== Dashboard 本地解析 ==
+U -> D : 點「AI 系統解析」
+D -> P : parseCustomerCreate(aiInput)
+alt 符合「新增客戶」指令
+  P --> D : {target:'customer_create', data:{company,address,tel,credit,...}}
+
+  == 開啟功能頁 ==
+  D -> D : handleMenuClick('customer_create')\ncurrentUrl=... iframe src
+  D -> D : payload = PREFILL_CUSTOMER_CREATE(data)
+  alt iframe 已載入
+    D -> I : postMessage(payload)
+  else iframe 未載入
+    D -> D : pendingIframeMessage = payload
+    D -> I : (load) -> onIframeLoad() -> postMessage(pending)
+  end
+
+  == iframe 接收並帶入 ==
+  I -> M : window.message event
+  M -> F : form.company = company
+  M -> F : form.addresses[0] = address
+  M -> F : form.tel = [tel] (或覆蓋第一筆)
+  M -> F : form.credit = Number(credit)
+  M -> I : nextTick focus company
+
+  == 儲存 ==
+  U -> I : 點「儲存客戶」
+  I -> B : POST save(payload)
+  B --> I : {ok:true, refno}
+  I -> I : showAlert('success')
+
+  == 回傳 Dashboard 已儲存 ==
+  I -> D : postMessage({type:'CUSTOMER_CREATE_SAVED', data:{refno}})
+  D -> DM : onMessage()
+  DM -> D : ElNotification 已儲存(refno)
+else 其他指令
+  P --> D : null
+  D -> D : socket.emit('ai_command', ...)
+end
+
+@enduml

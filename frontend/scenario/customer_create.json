@@ -1,0 +1,182 @@
+{
+  "page": "customer_create",
+  "title": "新增客戶",
+
+  "tables": {
+    "main": {
+      "table": "dbo.customer",
+      "key": "refno"
+    },
+    "related": {
+      "address": { "table": "dbo.address", "fk": "refno", "cate": "c" },
+      "contact": { "table": "dbo.contact", "fk": "refno", "cate": "c" },
+      "tel": { "table": "dbo.tel", "fk": "refno", "cate": "c" },
+      "email": { "table": "dbo.email", "fk": "refno", "cate": "c" },
+      "cus_rep": { "table": "dbo.cus_rep", "fk": "refno" }
+    }
+  },
+
+  "category": {
+    "levels": [
+      {
+        "level": 1,
+        "label": "分類(第一層)",
+        "source": {
+          "type": "sql",
+          "query": "SELECT id, ISNULL(c01,c01_e) AS name, symbol FROM dbo.cate_cust01 WHERE cate='c'"
+        },
+        "bind": { "column": "no1" }
+      },
+      {
+        "level": 2,
+        "label": "分類(第二層)",
+        "dependsOn": "level1.id",
+        "source": {
+          "type": "sql",
+          "query": "SELECT id, ISNULL(c02,c02_e) AS name, symbol FROM dbo.cate_cust02 WHERE cate='c' AND no1=:no1"
+        },
+        "bind": { "column": "no2" }
+      }
+    ],
+
+    "refno": {
+      "prefix": {
+        "source": ["cate_cust01.symbol", "cate_cust02.symbol"]
+      },
+      "generateRule": {
+        "queryLast": "SELECT refno FROM customer WHERE refno LIKE :prefix+'%' ORDER BY refno DESC",
+        "whenNotFound": "{prefix}{seq:3,start=1}",
+        "whenFound": "{prefix}{seq:3,from=lastSuffixPlus1}"
+      }
+    }
+  },
+
+  "fields": [
+    { "key": "refno", "label": "客戶代號", "table": "dbo.customer", "column": "refno", "widget": "input", "readonly": true },
+
+    { "key": "company", "label": "公司名稱", "table": "dbo.customer", "column": "company", "maxLength": 100 },
+    { "key": "short", "label": "公司簡稱", "table": "dbo.customer", "column": "short", "maxLength": 10 },
+
+    {
+      "key": "country",
+      "label": "國家",
+      "table": "dbo.customer",
+      "column": "country",
+      "widget": "select",
+      "source": { "type": "sql", "query": "SELECT id AS value, country AS label FROM dbo.countries" }
+    },
+
+    {
+      "key": "headerquarter",
+      "label": "總公司",
+      "table": "dbo.customer",
+      "column": "headerquarter",
+      "widget": "select",
+      "source": { "type": "sql", "query": "SELECT id AS value, company AS label FROM dbo.customer WHERE ISNULL(del,0)=0" }
+    },
+
+    {
+      "key": "addresses",
+      "label": "地址",
+      "widget": "multi-input",
+      "persist": { "table": "dbo.address", "column": "address", "cate": "c" }
+    },
+
+    {
+      "key": "contacts",
+      "label": "聯絡人",
+      "widget": "multi-input",
+      "persist": { "table": "dbo.contact", "column": "c_name", "cate": "c" }
+    },
+
+    {
+      "key": "tel",
+      "label": "電話",
+      "widget": "multi-input",
+      "persist": { "table": "dbo.tel", "column": "num", "cate": "c", "Def": "T" }
+    },
+
+    {
+      "key": "fax",
+      "label": "傳真",
+      "widget": "multi-input",
+      "persist": { "table": "dbo.tel", "column": "num", "cate": "c", "Def": "F" }
+    },
+
+    {
+      "key": "emails",
+      "label": "Email",
+      "widget": "multi-input",
+      "persist": { "table": "dbo.email", "column": "num", "cate": "c" }
+    },
+
+    { "key": "url", "label": "網址", "table": "dbo.customer", "column": "url" },
+
+    {
+      "key": "ceo",
+      "label": "負責人",
+      "group": [
+        { "key": "gender", "table": "dbo.customer", "column": "gender", "widget": "select", "options": [{ "value": "M", "label": "男" }, { "value": "F", "label": "女" }] },
+        { "key": "ceo_last_name", "table": "dbo.customer", "column": "ceo_last_name" },
+        { "key": "ceo_first_name", "table": "dbo.customer", "column": "ceo_first_name" }
+      ]
+    },
+
+    {
+      "key": "sales_reps",
+      "label": "業務代表",
+      "widget": "multi-select",
+      "source": { "type": "sql", "query": "SELECT id AS value, name AS label FROM dbo.staff WHERE ISNULL(del,0)=0 AND ISNULL(quit,'N')='N'" },
+      "persist": { "table": "dbo.cus_rep", "column": "sales_rep" }
+    },
+
+    {
+      "key": "Class2",
+      "label": "品質認證",
+      "table": "dbo.customer",
+      "column": "Class2",
+      "widget": "select",
+      "source": { "type": "sql", "query": "SELECT class2 AS value, class2 AS label FROM dbo.Class2" }
+    },
+
+    {
+      "key": "employee",
+      "label": "員工人數",
+      "table": "dbo.customer",
+      "column": "employee",
+      "widget": "select",
+      "options": [
+        { "value": "1~5" }, { "value": "6~10" }, { "value": "11~20" },
+        { "value": "21~50" }, { "value": "51~100" }, { "value": "101~" }
+      ]
+    },
+
+    { "key": "quit", "label": "拒絕往來", "table": "dbo.customer", "column": "quit", "widget": "checkbox" },
+    { "key": "secret", "label": "自營工廠", "table": "dbo.customer", "column": "secret", "widget": "checkbox" },
+
+    { "key": "LicenceNo", "label": "統一編號", "table": "dbo.customer", "column": "LicenceNo" },
+
+    {
+      "key": "payment",
+      "label": "付款方式",
+      "table": "dbo.customer",
+      "column": "payment",
+      "widget": "select",
+      "source": { "type": "sql", "query": "SELECT payment AS value, payment AS label FROM dbo.payment" },
+      "allowManage": true
+    },
+
+    { "key": "credit", "label": "信用額度(USD)", "table": "dbo.customer", "column": "credit", "widget": "number" },
+    { "key": "commission", "label": "佣金(%)", "table": "dbo.customer", "column": "commission", "widget": "number" },
+
+    { "key": "remarks", "label": "附註說明", "table": "dbo.customer", "column": "remarks", "widget": "textarea" }
+  ],
+
+  "saveFlow": [
+    "validate",
+    "generate_refno",
+    "insert_customer",
+    "insert_related",
+    "commit"
+  ]
+}

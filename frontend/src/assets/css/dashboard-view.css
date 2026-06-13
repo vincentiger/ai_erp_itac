@@ -1,0 +1,300 @@
+/* =========================
+   Sidebar menu (唯一版本)
+   ========================= */
+
+/* 側欄/選單底色一定是白色 */
+.dashboard-view .white-sidebar,
+.dashboard-view .sidebar-menu-container,
+.dashboard-view .custom-white-menu,
+.dashboard-view .custom-white-menu.el-menu,
+.dashboard-view .custom-white-menu .el-menu {
+  background: #ffffff !important;
+}
+
+/* 移除 el-menu 預設邊框 */
+.dashboard-view .custom-white-menu,
+.dashboard-view .custom-white-menu.el-menu,
+.dashboard-view .custom-white-menu .el-menu {
+  border: none !important;
+}
+
+/* menu item / submenu title 基礎 */
+.dashboard-view .el-menu-item,
+.dashboard-view .el-sub-menu__title {
+  color: #555555 !important;
+  border-radius: 8px;
+  margin: 0 10px 4px;            /* ✅ 有左右留白，hover 不會滿版亂跑 */
+  height: 45px !important;
+  line-height: 45px !important;
+}
+
+/* hover */
+.dashboard-view .el-menu-item:hover,
+.dashboard-view .el-sub-menu__title:hover {
+  background-color: #eeeeee !important;
+  color: #91C51B !important;
+  font-weight: 700 !important;
+}
+
+/* =========================================
+   Sidebar ACTIVE 規則（最終版）
+   ========================================= */
+
+/* ===== A. 一般 menu item（功能頁）active ===== */
+/* =================================================
+   Sidebar ACTIVE 最終行為（依照最新需求）
+   ================================================= */
+
+/* ===== 共用：active 時字體 ===== */
+.dashboard-view .el-menu-item.is-active,
+.dashboard-view .el-sub-menu.is-active > .el-sub-menu__title {
+  font-weight: 700 !important;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+/* ===== A. sub-menu（群組標題）active ===== */
+/* icon 不變色、無陰影、白底 */
+.dashboard-view .el-sub-menu.is-active > .el-sub-menu__title {
+  box-shadow: none !important;
+}
+
+/* sub-menu icon：強制不變色 */
+.dashboard-view .el-sub-menu.is-active > .el-sub-menu__title .el-icon,
+.dashboard-view .el-sub-menu.is-active > .el-sub-menu__title i {
+  color: inherit !important;
+}
+
+/* ===== B. menu item（功能）active ===== */
+/* 右邊偏多的綠色陰影提示 */
+.dashboard-view .el-menu-item.is-active {
+  box-shadow:
+    inset -3px 0 0 #91C51B,   /* 右側主提示 */
+    inset -5px 0 0 rgba(145,197,27,.25); /* 擴散層 */
+}
+
+/* hover 時不要蓋掉 active 的右側提示 */
+.dashboard-view .el-menu-item.is-active:hover {
+  background-color: #ffffff !important;
+}
+
+/* =========================
+   Header
+   ========================= */
+.dashboard-view .custom-gradient-header {
+  background: linear-gradient(90deg, #91C51B 25%, #ffffff 70%);
+  backdrop-filter: blur(8px);
+  height: 60px;
+}
+
+.dashboard-view .el-header.custom-gradient-header {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.dashboard-view .dynamic-breadcrumb {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  letter-spacing: 0.025em;
+}
+
+.dashboard-view .dynamic-breadcrumb span {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  margin-left: 6px;
+}
+
+/* =========================
+   Main
+   ========================= */
+.dashboard-view .el-main {
+  padding: 0 !important;
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background-color: #efefef;
+}
+
+/* =========================
+   Footer select / badge
+   ========================= */
+.dashboard-view .custom-select-white .el-input__wrapper {
+  background-color: #f8fafc !important;
+  box-shadow: 0 0 0 1px #e2e8f0 inset !important;
+  transition: all 0.2s;
+}
+.dashboard-view .custom-select-white .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px #cbd5e1 inset !important;
+}
+.dashboard-view .el-badge__content {
+  border: none !important;
+}
+
+/* =========================
+   Scrollbar
+   ========================= */
+.dashboard-view .custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.dashboard-view .custom-scrollbar::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+.dashboard-view .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 10px;
+}
+.dashboard-view .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* =========================
+   Mobile sidebar slide
+   ========================= */
+@media (max-width: 1023px) {
+  .dashboard-view .white-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 2000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #ffffff !important;
+    box-shadow: 2px 0 5px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .dashboard-view .white-sidebar:not(.mobile-active) {
+    transform: translateX(-100%) !important;
+  }
+  .dashboard-view .white-sidebar.mobile-active {
+    transform: translateX(0) !important;
+  }
+}
+
+/* ✅ collapse 時，子選單會跑到 body 的 popup */
+.el-menu--popup .el-menu-item:hover,
+.el-menu--popup .el-sub-menu__title:hover {
+  background-color: #eeeeee !important;
+  color: #91C51B !important;
+  font-weight: 700 !important;
+}
+
+.el-menu--popup .el-menu-item.is-active {
+  background-color: #91C51B !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* =========================
+   AI input icons（讓麥克風圖示回來）
+   ========================= */
+.dashboard-view .ai-input-wrap { position: relative; }
+
+.dashboard-view .custom-ai-input .el-textarea__inner{
+  padding-right: 16px;
+  padding-bottom: 56px;
+  resize: none;
+}
+
+.dashboard-view .ai-actions{
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 20; /* 你原本是 5，容易被蓋 */
+}
+
+.dashboard-view .ai-icon{
+  width: 36px;
+  height: 36px;
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  transition: background .15s ease, color .15s ease, transform .08s ease;
+}
+
+.dashboard-view .ai-icon:hover{
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+}
+
+.dashboard-view .ai-icon:active{ transform: scale(.98); }
+
+.dashboard-view .ai-icon:disabled{
+  opacity: .35;
+  cursor: not-allowed;
+  background: transparent !important;
+}
+
+.dashboard-view .ai-send{
+  color: #0f172a;
+}
+
+.dashboard-view .ai-svg{
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* =========================
+   Recording animation
+   ========================= */
+@keyframes recBounce{
+  0%, 100% { transform: scaleY(.6); }
+  50%      { transform: scaleY(1.35); }
+}
+
+.dashboard-view .rec-pill{
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(239,68,68,.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,.25);
+}
+
+.dashboard-view .rec-wave{
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+
+.dashboard-view .rec-wave i{
+  display:block;
+  width: 3px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: recBounce 1.1s infinite ease-in-out;
+  opacity: .85;
+}
+.dashboard-view .rec-wave i:nth-child(2){ animation-delay: .12s; height: 10px; opacity:.75; }
+.dashboard-view .rec-wave i:nth-child(3){ animation-delay: .24s; height: 14px; opacity:.9; }
+.dashboard-view .rec-wave i:nth-child(4){ animation-delay: .36s; height: 9px;  opacity:.7; }
+.dashboard-view .rec-wave i:nth-child(5){ animation-delay: .48s; height: 12px; opacity:.8; }
+
+/* =========================
+   Desktop: 隱藏 menu toggle（你新加的那段）
+   ========================= */
+@media (min-width: 1024px) {
+  .dashboard-view .mobile-toggle-btn.is-menu {
+    display: none !important;
+  }
+}

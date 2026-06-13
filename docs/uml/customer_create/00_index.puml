@@ -1,0 +1,16 @@
+@startuml
+!include ../common/theme.puml
+title 新增客戶 - UML 總覽（Index）
+
+package "Customer Create" {
+  [01_sequence_ai_prefill.puml] as S1
+  [02_activity_dashboard.puml] as A1
+  [03_activity_customercreate_iframe.puml] as A2
+  [04_component_arch.puml] as C1
+}
+
+note right of S1
+  AI 輸入/語音 -> Dashboard 本地解析 -> iframe prefill -> 儲存 -> 回傳通知
+end note
+
+@enduml

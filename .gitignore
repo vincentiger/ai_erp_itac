@@ -1,0 +1,67 @@
+# =========================
+# Python
+# =========================
+venv/
+.venv/
+.venv_local/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# =========================
+# Environment
+# =========================
+.env
+.env.local
+.env.*
+
+# =========================
+# Node
+# =========================
+node_modules/
+frontend/node_modules/
+
+dist/
+build/
+frontend/dist/
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+tmp_backend_stdout.log
+tmp_backend_stderr.log
+
+# =========================
+# Upload
+# =========================
+uploads/
+_tmp/
+
+# =========================
+# Backup
+# =========================
+*.bak
+*.mdf
+*.ldf
+
+# =========================
+# Temporary Files
+# =========================
+temp_*.docx
+temp_*.pdf
+temp_*.xlsx
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Windows
+# =========================
+Thumbs.db
+Desktop.ini

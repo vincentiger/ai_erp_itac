@@ -1,0 +1,20 @@
+' Common visual theme
+skinparam shadowing false
+skinparam dpi 140
+skinparam roundcorner 14
+skinparam ArrowColor #334155
+skinparam DefaultFontName "Microsoft JhengHei"
+skinparam ActivityBorderColor #cbd5e1
+skinparam ActivityBackgroundColor #ffffff
+skinparam ParticipantBorderColor #cbd5e1
+skinparam ParticipantBackgroundColor #ffffff
+skinparam NoteBackgroundColor #fff7ed
+skinparam NoteBorderColor #fdba74
+skinparam SequenceLifeLineBorderColor #cbd5e1
+skinparam SequenceLifeLineBackgroundColor #f8fafc
+skinparam BoxPadding 10
+skinparam maxMessageSize 80
+
+' Make titles consistent
+skinparam titleFontSize 18
+skinparam titleFontStyle bold

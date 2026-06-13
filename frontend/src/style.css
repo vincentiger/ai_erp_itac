@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #fff !important;
+  }
+
+  /* ✅ 這行通常才是關鍵：畫面主要是 #app 在撐滿 */
+  #app {
+    min-height: 100vh;
+    background: #fff !important;
+  }
+}

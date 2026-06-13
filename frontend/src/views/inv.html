@@ -1,0 +1,63 @@
+<div>
+     <div style="text-align: left; padding-left: 300px; height: 50px; background-color: rgb(239, 239, 239); z-index: 1200;" class="start" id="page_title">
+          <h4 style="padding-top:10px">
+               <span class="menuIni" style="color:#0063C6;padding-bottom:2px;border-bottom:5px #0063C6 solid">進</span>貨單維護
+          </h4>
+     </div>
+     <div style="text-align: left;">
+          <button>新增進貨單</button><button onclick="$('.divSearch').fadeIn()">搜尋</button><button>重新載入</button>
+     </div>
+     <div class="divSearch" style="display:none">
+          <select id="selStatus">
+               <option value="0">狀態</option>
+               <option value="1">已入庫</option>
+               <option value="2">未入庫</option>
+          </select>
+          <input id="iptData" placeholder="採購單號 / 產品編號 / 進貨單號 / 廠商">
+          <button>Go</button><button onclick="$('#selStatus').val('0');$('#iptData').val('')">清除</button>
+     </div>
+     <div class="divList">
+          <table>
+               <thead>
+               <tr align="center">
+                    <th>序號</th>
+                    <th>採購單號</th>
+                    <th>產品編號</th>
+                    <th width="18%">產品敘述</th>
+                    <th>採購數量</th>
+                    <th>進貨數量</th>
+                    <th>單價</th>
+                    <th>幣別</th>
+                    <th>狀態</th>
+                    <th>入庫</th>
+               </tr>
+               </thead>
+               <tbody>
+                    <tr>
+                         <td colspan="3">進貨單號:1150131003</td>
+                         <td colspan="10">廠商:標達企業有限公司</td>
+                    </tr>
+                    <tr align="left">
+                         <td>1</td>
+                         <td>P181025001105</td>
+                         <td>30-30-NPO</td>
+                         <td>3.0MM WIRE X O.L. 76CM
+     WIHT STEEL HOOK AT ONE END, 3.5MM WIRE O-
+     RING AT THE OTHER END, NICKEL PALTED
+     (客樣: 69mm 長鐵勾 + 一個3.0x9.8mm 連結環 +
+     3mm x 66.5cm 有焊鐵鍊 + 3.5x18.2mm O環, 總長
+     76cm , 鍍鎳) (愈接近客樣愈好)</td>
+                         <td align="right">500</td>
+                         <td align="right">500</td>
+                         <td align="right">3.50</td>
+                         <td align="center">USD</td>
+                         <td align="center">未入庫</td>
+                         <td align="center"><span title="入庫">+</span></td>
+                    </tr>
+               </tbody>
+          </table>
+     </div>
+     <div class="divPagination">
+
+     </div>
+</div>

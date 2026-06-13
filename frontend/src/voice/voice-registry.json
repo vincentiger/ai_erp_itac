@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "intents": [
+    {
+      "intent_key": "customer.search",
+      "intent_label": "查詢客戶",
+      "type": "route",
+      "intent_aliases": [
+        "查詢客戶",
+        "客戶查詢",
+        "搜尋客戶",
+        "客戶搜尋",
+        "請找出客戶",
+        "幫我找客戶",
+        "找客戶"
+      ],
+      "entity": "customer",
+      "routeName": "customer_view",
+      "aiView": "ai_customers",
+      "pkField": "refno",
+      "defaultFields": ["refno", "company", "short"],
+      "hints": {
+        "地址": ["address"],
+        "電話": ["tel"],
+        "聯絡人": ["contact"]
+      },
+      "autoOpenOnSingle": true
+    },
+    {
+      "intent_key": "supplier.search",
+      "intent_label": "查詢廠商",
+      "type": "route",
+      "intent_aliases": [
+        "查詢廠商",
+        "廠商查詢",
+        "搜尋廠商",
+        "廠商搜尋",
+        "請找出廠商",
+        "幫我找廠商",
+        "找廠商"
+      ],
+      "entity": "supplier",
+      "routeName": "supplier_view",
+      "aiView": "ai_supplierBasic",
+      "pkField": "supno",
+      "defaultFields": ["supno", "company", "short"],
+      "hints": {
+        "地址": ["address"],
+        "電話": ["tel"],
+        "聯絡人": ["contact"]
+      },
+      "autoOpenOnSingle": true
+    },
+    {
+      "intent_key": "order.search",
+      "intent_label": "查詢訂單",
+      "type": "route",
+      "intent_aliases": [
+        "查詢訂單",
+        "訂單查詢",
+        "搜尋訂單",
+        "訂單搜尋",
+        "請找出訂單",
+        "幫我找訂單",
+        "找訂單"
+      ],
+      "entity": "order",
+      "routeName": "order_view",
+      "aiView": "ai_orderBasic",
+      "pkField": "ordno",
+      "defaultFields": ["ordno", "refno", "company", "subject"],
+      "hints": {
+        "客戶": ["refno", "company"],
+        "品名": ["subject", "item"],
+        "日期": ["date"],
+        "金額": ["amount"]
+      },
+      "autoOpenOnSingle": true
+    },
+    {
+      "intent_key": "order.semantic.query",
+      "intent_label": "語意查詢訂單",
+      "type": "semantic",
+      "intent_aliases": [
+        "列出訂單",
+        "所有訂單",
+        "去年訂單",
+        "今年訂單",
+        "依客戶排序",
+        "依日期排序"
+      ],
+      "entity": "order",
+      "aiView": "ai_orders",
+      "dateField": "訂單日期",
+      "defaultFields": [
+        "客戶名稱",
+        "業務代表",
+        "訂單編號",
+        "form_no",
+        "幣別",
+        "訂單金額",
+        "訂單日期",
+        "公司抬頭"
+      ],
+      "semanticRules": {
+        "period": ["去年", "今年", "上個月", "本月"],
+        "sort": {
+          "客戶": "客戶名稱",
+          "日期": "訂單日期",
+          "金額": "訂單金額"
+        }
+      },
+      "limit": 1000
+    }
+  ]
+}

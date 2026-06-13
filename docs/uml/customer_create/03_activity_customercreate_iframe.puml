@@ -1,0 +1,43 @@
+@startuml
+!include ../common/theme.puml
+title customer_create.vue：接收 Prefill -> 套表單 -> 儲存（Activity）
+
+start
+
+:window.addEventListener('message', onParentMessage);
+
+if (收到訊息 type=PREFILL_CUSTOMER_CREATE?) then (yes)
+  :解析 company/address/tel/credit;
+  if (company 非空) then (yes)
+    :form.company = company;
+  endif
+
+  if (address 非空) then (yes)
+    :form.addresses[0] = address\n(若沒有則 push 第一筆);
+  endif
+
+  if (tel 非空) then (yes)
+    :form.tel = [tel]\n(避免拆成單字元);
+  endif
+
+  if (credit 非空) then (yes)
+    :form.credit = Number(credit);
+  endif
+
+  :nextTick focus company;
+endif
+
+:使用者補齊必填\n(分類/簡稱/聯絡人/業務...);
+
+if (按下儲存) then (save)
+  :組 payload -> POST /api/form/customer_create/save;
+  if (成功) then (ok)
+    :showAlert success;
+    :postMessage CUSTOMER_CREATE_SAVED(refno) 給 Dashboard;
+  else (fail)
+    :showAlert error;
+  endif
+endif
+
+stop
+@enduml

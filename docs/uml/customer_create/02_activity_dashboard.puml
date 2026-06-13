@@ -1,0 +1,27 @@
+@startuml
+!include ../common/theme.puml
+title Dashboard：AI 解析 -> 開 iframe -> Prefill（Activity）
+
+start
+
+:使用者輸入 aiInput\n(文字/語音覆蓋);
+:handleAiSubmit();
+
+if (parseCustomerCreate() 命中?) then (yes)
+  :handleMenuClick('customer_create');
+  :組 payload (PREFILL_CUSTOMER_CREATE)\ncompany/address/tel/credit;
+  if (iframeRef.contentWindow 可用?) then (yes)
+    :postMessage(payload);
+  else (no)
+    :pendingIframeMessage = payload;
+    :等待 iframe load;
+    :onIframeLoad() -> postMessage(pending);
+  endif
+  :ElNotification\n"已開啟新增客戶並帶入";
+  stop
+else (no)
+  :socket.emit('ai_command', {text, context});
+  stop
+endif
+
+@enduml

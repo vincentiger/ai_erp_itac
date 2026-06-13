@@ -1,0 +1,108 @@
+USE [Hanlien]
+GO
+
+/****** Object:  Table [dbo].[customer]    Script Date: 2026/1/3 上午 08:29:46 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[customer](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[refno] [nchar](15) NULL,
+	[no1] [int] NULL,
+	[no2] [int] NULL,
+	[cate] [nvarchar](100) NULL,
+	[country] [nvarchar](50) NULL,
+	[company] [nvarchar](255) NULL,
+	[short] [nvarchar](255) NULL,
+	[headquarter] [int] NULL,
+	[secret] [int] NULL,
+	[URL] [nchar](50) NULL,
+	[credit] [money] NULL,
+	[commission] [float] NULL,
+	[payment] [nvarchar](250) NULL,
+	[employee] [nvarchar](50) NULL,
+	[class2] [nchar](20) NULL,
+	[items] [nvarchar](50) NULL,
+	[remarks] [nvarchar](max) NULL,
+	[add_date] [datetime] NULL,
+	[add_person] [nvarchar](50) NULL,
+	[quit] [char](1) NULL,
+	[del] [int] NULL,
+	[licenceNo] [nvarchar](30) NULL,
+
+ CONSTRAINT [PK_customer] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'客戶代號' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'refno'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'分類第一層(=cate_cust01.id)' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'no1'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'分類第二層(=cate_cust02.id)' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'no2'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'分類名稱[dbo].[cate_cust01].symbol +'',''+ [dbo].[cate_cust02].symbol' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'cate'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'國家' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'country'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'公司全名' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'company'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'公司簡稱' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'short'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'母公司[dbo].[customer].id' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'headquarter'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'1:自營工廠' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'secret'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'網址' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'URL'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'信用額度' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'credit'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'傭金' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'commission'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'付款方式' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'payment'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'員工人數' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'employee'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'品質認證' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'class2'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'經營項目' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'items'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'附註說明' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'remarks'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'建檔日期' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'add_date'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'建檔人([staff].id)' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'add_person'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'1:拒絕往來' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'quit'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'1:刪除' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'del'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'統一編號' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'customer', @level2type=N'COLUMN',@level2name=N'licenceNo'
+GO
+

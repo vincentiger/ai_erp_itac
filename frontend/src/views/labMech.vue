@@ -171,7 +171,7 @@
                 allow-create
                 default-first-option
                 clearable
-                placeholder="試驗方法"
+                placeholder="檢驗規範"
                 class="flex-1"
                 @change="onSharedOptionSelected('method_code', $event)"
               >
@@ -190,7 +190,7 @@
               allow-create
               default-first-option
               clearable
-              placeholder="檢測方式"
+              placeholder="檢驗方式"
               class="w-full"
               @change="onSharedOptionSelected('inspection_method', $event)"
             >
@@ -317,7 +317,7 @@
                 allow-create
                 default-first-option
                 clearable
-                placeholder="試驗方法"
+                placeholder="檢驗規範"
                 class="flex-1"
                 @change="onSharedOptionSelected('method_code', $event)"
               >
@@ -336,7 +336,7 @@
               allow-create
               default-first-option
               clearable
-              placeholder="檢測方式"
+              placeholder="檢驗方式"
               class="w-full"
               @change="onSharedOptionSelected('inspection_method', $event)"
             >

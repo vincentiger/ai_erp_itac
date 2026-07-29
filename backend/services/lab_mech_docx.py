@@ -312,6 +312,9 @@ def _fill_hardness_block(table, item: Dict[str, Any]):
             txt = txt.replace(f"□{method_code}", f"☑{method_code}")
         c.text = txt
 
+    method_code = (item.get("method_code") or "").strip()
+    inspection_method = (item.get("inspection_method") or "").strip()
+
     target_cell = None
     for rr in range(start_ri + 1, min(len(table.rows), start_ri + 8)):
         cells = _row_unique_cells(table.rows[rr])
@@ -335,6 +338,16 @@ def _fill_hardness_block(table, item: Dict[str, Any]):
             run.font.color.rgb = RGBColor(255, 0, 0)
         run.add_break()
 
+    if method_code or inspection_method:
+        add_line(
+            "　".join(
+                part for part in [
+                    f"檢驗規範：{method_code}" if method_code else "",
+                    f"檢驗方式：{inspection_method}" if inspection_method else "",
+                ]
+                if part
+            )
+        )
     add_line(f"規格：{_format_spec_range(item.get('spec_min'), item.get('spec_max'))}")
     add_line(
         f"合格：{item.get('pass_count') or 0}    不合格：{item.get('fail_count') or 0}    結果：{item.get('result') or ''}",

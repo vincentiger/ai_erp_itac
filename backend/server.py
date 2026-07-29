@@ -43,11 +43,15 @@ from routes.ai_kpi import bp as ai_kpi_bp
 from routes.ar_apply import bp as ar_apply_bp
 from routes.ar_manage import bp as ar_manage_bp
 from routes.inv_grn import bp as inv_grn_bp
+import routes.lab_forms as lab_forms_module
 from routes.lab_forms import bp as lab_forms_bp
+from utils.lab_export_signature import install_lab_export_signature
 from routes.realtime import bp as rt_bp
 from routes.lab_qet import bp as lab_qet_bp
 from routes.lab_mech import bp as lab_mech_bp
+import routes.lab_final_report as lab_final_report_module
 from routes.lab_final_report import bp as lab_final_report_bp
+from routes.lab_workflow import bp as lab_workflow_bp
 
 # 前端 /ai/api/rt/login -> Vite 轉發 /api/rt/login -> 這裡接到 /login
 # --- Logging ---
@@ -125,6 +129,9 @@ def create_app():
     app.json = ERPJSONProvider(app)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "erp_secret")
     app.config["GET_DB_CONN"] = get_db_conn
+    app.config.setdefault("JWT_TOKEN_LOCATION", ["headers", "cookies"])
+    app.config.setdefault("JWT_COOKIE_CSRF_PROTECT", False)
+    app.config.setdefault("JWT_COOKIE_SECURE", False)
     # ✅ 修正 CORS 設定，允許特定的 Origin 並支援 Credentials
     CORS(app, resources={r"/*": {
         "origins": [
@@ -147,6 +154,8 @@ def create_app():
     app.register_blueprint(ar_apply_bp, url_prefix="/api")
     app.register_blueprint(ar_manage_bp, url_prefix="/api")
     app.register_blueprint(inv_grn_bp, url_prefix="/api")
+    install_lab_export_signature(lab_forms_module)
+    install_lab_export_signature(lab_final_report_module, "_build_final_report")
     app.register_blueprint(lab_forms_bp, url_prefix="/lab")
     app.register_blueprint(lab_forms_bp, url_prefix="/api/lab", name="lab_forms_api_compat")
     app.register_blueprint(lab_forms_bp, url_prefix="/ai/api/lab", name="lab_forms_ai_api_compat")
@@ -156,6 +165,9 @@ def create_app():
     app.register_blueprint(lab_qet_bp, url_prefix="/ai/api/lab/qet", name="lab_qet_ai_api_compat")
     app.register_blueprint(lab_mech_bp)
     app.register_blueprint(lab_final_report_bp)
+    app.register_blueprint(lab_workflow_bp, url_prefix="/lab", name="lab_workflow_legacy")
+    app.register_blueprint(lab_workflow_bp, url_prefix="/api/lab", name="lab_workflow_api_compat")
+    app.register_blueprint(lab_workflow_bp, url_prefix="/ai/api/lab", name="lab_workflow_ai_api_compat")
     # ✅ Socket.IO 路徑修正
     if USE_SOCKETIO:
         # 注意：這裡對應的是 Vite 轉發後的最終路徑

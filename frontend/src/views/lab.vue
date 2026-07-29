@@ -1300,7 +1300,7 @@ async function loadDrawingAttachments() {
 
 async function chooseDrawingAttachment() {
   if (!state.formId) {
-    const ok = await saveDraftReal()
+    const ok = await saveDraftReal({ refresh: false })
     if (!ok || !state.formId) {
       ElMessage.warning('請先儲存委託單後再上傳附圖')
       return
@@ -1348,7 +1348,7 @@ async function chooseApprovalSignature(kind) {
     return
   }
   if (!state.formId) {
-    const ok = await saveDraftReal()
+    const ok = await saveDraftReal({ refresh: false })
     if (!ok || !state.formId) {
       ElMessage.warning('請先儲存委託單後再上傳簽名檔')
       return
@@ -1560,7 +1560,8 @@ function syncTestMethodsByName() {
   form.test_method_by_name = out
 }
 
-async function saveDraftReal() {
+async function saveDraftReal(options = {}) {
+  const refresh = options.refresh !== false
   state.saving = true
 
   try {
@@ -1606,7 +1607,7 @@ async function saveDraftReal() {
     if (json.form_id) {
       state.formId = json.form_id
       localStorage.setItem('lab_form_id', json.form_id)
-      if (String(route.query.form_id || '') !== json.form_id) {
+      if (refresh && String(route.query.form_id || '') !== json.form_id) {
         router.replace({
           name: 'lab',
           query: { ...route.query, form_id: json.form_id },

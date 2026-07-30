@@ -340,11 +340,17 @@
                           v-if="cate.key === 'mechanical' && ['心部硬度', '表面硬度'].includes(item.name) && isTestItemSelected(cate.key, item.name)"
                           class="mt-2"
                         >
+                          <el-input
+                            v-model="form.hardness_inspection_standards[hardnessInspectionKey(item.name)]"
+                            clearable
+                            class="w-full mb-2"
+                            placeholder="檢驗規範"
+                          />
                           <el-select
                             v-model="form.hardness_inspection_methods[hardnessInspectionKey(item.name)]"
                             clearable
                             class="w-full"
-                            placeholder="檢測方式"
+                            placeholder="檢驗方式"
                           >
                             <el-option v-for="method in hardnessInspectionMethods" :key="`${item.name}-${method}`" :label="method" :value="method" />
                           </el-select>
@@ -355,7 +361,7 @@
                           class="mt-3"
                         >
                           <div class="mb-1 text-xs font-semibold text-slate-600">標準值</div>
-                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div :class="['carburizing_depth', 'torque'].includes(testStandardKey(item.name)) ? 'grid grid-cols-1 sm:grid-cols-3 gap-2' : 'grid grid-cols-1 sm:grid-cols-2 gap-2'">
                             <el-input
                               v-model="form.test_standard_ranges[testStandardKey(item.name)].min"
                               inputmode="decimal"
@@ -371,6 +377,23 @@
                               :disabled="!isTestItemSelected(cate.key, item.name)"
                             >
                               <template #prepend>上限</template>
+                            </el-input>
+                            <el-select
+                              v-if="testStandardKey(item.name) === 'carburizing_depth'"
+                              v-model="form.test_standard_ranges[testStandardKey(item.name)].unit"
+                              placeholder="單位"
+                              :disabled="!isTestItemSelected(cate.key, item.name)"
+                            >
+                              <el-option label="mm" value="mm" />
+                              <el-option label="inch" value="inch" />
+                            </el-select>
+                            <el-input
+                              v-else-if="testStandardKey(item.name) === 'torque'"
+                              v-model="form.test_standard_ranges[testStandardKey(item.name)].unit"
+                              placeholder="請輸入單位"
+                              :disabled="!isTestItemSelected(cate.key, item.name)"
+                            >
+                              <template #prepend>單位</template>
                             </el-input>
                           </div>
                         </div>
@@ -860,7 +883,6 @@ const standardRangeItemKeys = new Set([
   'core_hardness',
   'surface_hardness',
   'carburizing_depth',
-  'decarb',
   'ductility',
   'torque',
   'hydrogen',
@@ -883,7 +905,7 @@ function isStandardRangeItem(categoryKey, itemName) {
 
 function createBlankTestStandardRanges() {
   return Object.fromEntries(
-    [...standardRangeItemKeys].map(key => [key, { min: '', max: '' }])
+    [...standardRangeItemKeys].map(key => [key, key === 'carburizing_depth' ? { min: '', max: '', unit: 'mm' } : key === 'torque' ? { min: '', max: '', unit: '' } : { min: '', max: '' }])
   )
 }
 
@@ -893,7 +915,7 @@ function ensureTestStandardRanges(categories = state.testConfigCategories) {
       if (!isStandardRangeItem(cate.key, item.name)) continue
       const key = testStandardKey(item.name)
       if (!form.test_standard_ranges[key]) {
-        form.test_standard_ranges[key] = { min: '', max: '' }
+        form.test_standard_ranges[key] = key === 'carburizing_depth' ? { min: '', max: '', unit: 'mm' } : key === 'torque' ? { min: '', max: '', unit: '' } : { min: '', max: '' }
       }
     }
   }
@@ -961,6 +983,10 @@ function createBlankLabForm() {
   },
   test_method_map: {},
   test_method_by_name: {},
+  hardness_inspection_standards: {
+    core: '',
+    surface: '',
+  },
   hardness_inspection_methods: {
     core: '',
     surface: '',
@@ -1090,6 +1116,10 @@ function assignFormValues(values = {}) {
     test_method_map: normalizeTestMethodMap(values.test_method_map || form.test_method_map),
     production_unit: values.production_unit || 'PCS',
     sample_unit: values.sample_unit || 'PCS',
+    hardness_inspection_standards: {
+      ...form.hardness_inspection_standards,
+      ...(values.hardness_inspection_standards || {}),
+    },
     hardness_inspection_methods: {
       ...form.hardness_inspection_methods,
       ...(values.hardness_inspection_methods || {}),
@@ -1513,15 +1543,22 @@ function selectedTestMethodsText(categoryKey) {
     const lines = []
     if (selectedMethods.length) lines.push(`${item.name}：${selectedMethods.join('、')}`)
     if (categoryKey === 'mechanical' && item.name === '心部硬度' && form.hardness_inspection_methods.core) {
+      if (form.hardness_inspection_standards.core) {
+        lines.push(`心部硬度檢驗規範：${form.hardness_inspection_standards.core}`)
+      }
       lines.push(`心部硬度檢測方式：${form.hardness_inspection_methods.core}`)
     }
     if (categoryKey === 'mechanical' && item.name === '表面硬度' && form.hardness_inspection_methods.surface) {
+      if (form.hardness_inspection_standards.surface) {
+        lines.push(`表面硬度檢驗規範：${form.hardness_inspection_standards.surface}`)
+      }
       lines.push(`表面硬度檢測方式：${form.hardness_inspection_methods.surface}`)
     }
     if (['mechanical', 'functional'].includes(categoryKey)) {
       const range = form.test_standard_ranges?.[testStandardKey(item.name)] || {}
-      if (range.min !== '' || range.max !== '') {
-        lines.push(`標準值：${range.min || '-'} - ${range.max || '-'}`)
+      if (testStandardKey(item.name) !== 'decarb' && (range.min !== '' || range.max !== '')) {
+        const unit = ['carburizing_depth', 'torque'].includes(testStandardKey(item.name)) && range.unit ? ` ${range.unit}` : ''
+        lines.push(`標準值：${range.min || '-'} - ${range.max || '-'}${unit}`)
       }
     }
     if (categoryKey === 'surface' && item.name === '電鍍膜厚') {

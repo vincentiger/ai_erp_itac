@@ -332,11 +332,69 @@
           <!-- 項目基本資訊 -->
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
             <el-form-item :label="isAppearanceItem(currentItem) ? '依據標準' : '標準值'">
-              <el-input v-model="currentItem.std_value" placeholder="由下方標準值輔助帶入" readonly />
+              <el-input
+                v-if="isFinishItem(currentItem)"
+                v-model="currentItem.std_value"
+                placeholder="請手動輸入表面處理標準"
+                :readonly="!isSupervisorUser"
+                @input="handleFinishStandardInput(currentItem)"
+              />
+              <el-select
+                v-else-if="isAppearanceItem(currentItem)"
+                v-model="currentItem.std_value"
+                class="w-full"
+                disabled
+              >
+                <el-option :label="APPEARANCE_STANDARD" :value="APPEARANCE_STANDARD" />
+              </el-select>
+              <el-input v-else v-model="currentItem.std_value" placeholder="由下方標準值輔助帶入" readonly />
+            </el-form-item>
+
+            <el-form-item v-if="!isAppearanceItem(currentItem) && !isFinishItem(currentItem)" label="標準值輔助" class="xl:col-span-2">
+              <div class="flex gap-2 w-full standard-helper">
+                <el-input
+                  v-model="currentItem.std_min"
+                  :placeholder="isRefStandardUnit(currentItem.std_unit) ? 'REF 設定值' : '最小值'"
+                  inputmode="decimal"
+                  :readonly="!isSupervisorUser"
+                  @input="handleStandardMinInput(currentItem)"
+                  @blur="normalizeStandardAngle(currentItem)"
+                />
+                <el-input
+                  v-if="!isDiscreteStandardUnit(currentItem.std_unit)"
+                  v-model="currentItem.std_max"
+                  placeholder="最大值"
+                  inputmode="decimal"
+                  :readonly="!isSupervisorUser"
+                  @input="updateStandardValue(currentItem)"
+                  @blur="normalizeStandardAngle(currentItem)"
+                />
+                <el-select
+                  v-model="currentItem.std_unit"
+                  class="standard-unit-select"
+                  :disabled="!isSupervisorUser"
+                  @change="updateStandardValue(currentItem)"
+                >
+                  <el-option label="度數" value="°" />
+                  <el-option label="mm" value="mm" />
+                  <el-option label="inch" value="inch" />
+                  <el-option label="OK/NG" value="OK/NG" />
+                  <el-option label="Go/NoGo" value="Go/NoGo" />
+                  <el-option label="REF" value="REF" />
+                </el-select>
+              </div>
+            </el-form-item>
+
+            <el-form-item v-if="isFinishItem(currentItem)" label="表面處理設定" class="xl:col-span-2">
+              <div class="text-sm text-gray-500">
+                設定完成後，實測值會以 OK / NG 判定；主管可隨時更新此標準文字。
+              </div>
             </el-form-item>
 
             <el-form-item label="實測值">
-              <el-input v-model="currentItem.actual_value" placeholder="輸入量測值後自動彙整" readonly />
+              <div :class="['rounded-lg', currentItem.result === 'FAIL' ? 'fail-actual-box' : '']">
+                <el-input v-model="currentItem.actual_value" placeholder="輸入量測值後自動彙整" readonly />
+              </div>
             </el-form-item>
 
             <el-form-item label="量具／編號">
@@ -555,6 +613,19 @@ function currentUserName() {
   return String(user?.name || user?.account || user?.id || '').trim()
 }
 
+const isSupervisorUser = computed(() => {
+  const user = currentUser()
+  const authority = Number(user?.authority)
+  const text = [
+    user?.role,
+    user?.title,
+    user?.authority_name,
+    user?.authorityName,
+    user?.dep,
+  ].map(v => String(v || '')).join(' ')
+  return authority === 12 || text.includes('主管')
+})
+
 function createItem(seqNo = 1, measureCount = 20) {
   return {
     _rowKey: nextRowKey(),
@@ -659,6 +730,10 @@ const testerOptions = computed(() => {
 
 function isAppearanceItem(item) {
   return /appearance|外觀/i.test(String(item?.item_name || '').trim())
+}
+
+function isFinishItem(item) {
+  return /finish|表面處理|表處/i.test(String(item?.item_name || '').trim())
 }
 
 function normalizeAppearanceItem(item) {
@@ -816,11 +891,20 @@ function isAngleUnit(unit) {
   return /^(°|度|度數|angle)$/i.test(String(unit || '').trim())
 }
 
+function isDiscreteStandardUnit(unit) {
+  return /^(OK\/NG|Go\/NoGo|REF)$/i.test(String(unit || '').trim())
+}
+
+function isRefStandardUnit(unit) {
+  return /^REF$/i.test(String(unit || '').trim())
+}
+
 function isAngleItem(item) {
   return isAngleUnit(item?.std_unit)
 }
 
 function isOkNgItem(item) {
+  if (isFinishItem(item)) return true
   const mode = `${item?.std_unit || ''} ${item?.std_value || ''}`
   return /OK\/NG/i.test(mode)
 }
@@ -836,6 +920,14 @@ function normalizeOkNgValue(value) {
   if (['OK', 'PASS', 'P'].includes(text)) return 'OK'
   if (['NG', 'FAIL', 'F', 'N'].includes(text)) return 'NG'
   return text
+}
+
+function handleFinishStandardInput(item) {
+  if (!item || !isFinishItem(item)) return
+  item.std_unit = 'OK/NG'
+  item.std_min = ''
+  item.std_max = ''
+  autoJudgeItem(item)
 }
 
 function cleanAngleNumber(value) {
@@ -1002,6 +1094,13 @@ function updateStandardValue(item) {
     autoJudgeItem(item)
     return
   }
+  if (isFinishItem(item)) {
+    item.std_unit = 'OK/NG'
+    item.std_min = ''
+    item.std_max = ''
+    autoJudgeItem(item)
+    return
+  }
   const unit = String(item.std_unit || '').trim()
   const min = String(item.std_min ?? '').trim()
   const max = String(item.std_max ?? '').trim()
@@ -1161,6 +1260,22 @@ function autoJudgeItem(item) {
   updateFinalResult()
 }
 
+function standardRangeValidationError(item, index) {
+  if (!item || isAppearanceItem(item) || isFinishItem(item) || isOkNgItem(item) || isRefItem(item)) return ''
+  const minRaw = String(item.std_min ?? '').trim()
+  const maxRaw = String(item.std_max ?? '').trim()
+  if (!minRaw && !maxRaw) return ''
+
+  const min = parseMeasurementNumber(minRaw)
+  const max = parseMeasurementNumber(maxRaw)
+  const label = item.item_name ? `第 ${index + 1} 項「${item.item_name}」` : `第 ${index + 1} 項`
+
+  if (minRaw && min === null) return `${label} 的標準值最小值格式不正確`
+  if (maxRaw && max === null) return `${label} 的標準值最大值格式不正確`
+  if (min !== null && max !== null && min > max) return `${label} 的標準值最小值不可大於最大值`
+  return ''
+}
+
 function updateFinalResult() {
   const results = state.items.map(item => String(item.result || 'PENDING').trim().toUpperCase())
   if (results.some(result => result === 'FAIL')) {
@@ -1175,6 +1290,11 @@ function updateFinalResult() {
 function normalizeItemForSave(item) {
   const out = { ...item }
   normalizeAppearanceItem(out)
+  if (isFinishItem(out)) {
+    out.std_unit = 'OK/NG'
+    out.std_min = ''
+    out.std_max = ''
+  }
   updateStandardValue(out)
   autoJudgeItem(out)
   if (isOkNgItem(out)) {
@@ -1214,6 +1334,13 @@ async function pasteFromClipboardPrompt() {
 }
 
 function buildPayload() {
+  const rangeError = state.items
+    .map((item, idx) => standardRangeValidationError(item, idx))
+    .find(Boolean)
+  if (rangeError) {
+    throw new Error(rangeError)
+  }
+
   state.items.forEach((item) => {
     updateStandardValue(item)
     syncActualValue(item)
@@ -1226,16 +1353,16 @@ function buildPayload() {
     items: state.items.map((rawItem, idx) => {
       const item = normalizeItemForSave(rawItem)
       return ({
-      seq_no: idx + 1,
-      item_name: item.item_name,
-      std_value: item.std_value,
-      actual_value: item.actual_value,
-      gauge_no: item.gauge_no,
-      inspect_qty: item.inspect_qty,
-      result: item.result,
-      remark: item.remark,
-      measurements: normalizeMeasurements(item.measurements, itemMeasureCount(item))
-    })
+        seq_no: idx + 1,
+        item_name: item.item_name,
+        std_value: item.std_value,
+        actual_value: item.actual_value,
+        gauge_no: item.gauge_no,
+        inspect_qty: item.inspect_qty,
+        result: item.result,
+        remark: item.remark,
+        measurements: normalizeMeasurements(item.measurements, itemMeasureCount(item))
+      })
     })
   }
 }
@@ -1272,7 +1399,15 @@ function hydrateFromResponse(data = {}) {
         remark: it.remark || '',
         measurements: normalizeMeasurements(it.measurements, Number(it.inspect_qty || state.measureCount || 1)),
         pasteText: ''
-      })).map(normalizeAppearanceItem)
+      })).map((item) => {
+        normalizeAppearanceItem(item)
+        if (isFinishItem(item)) {
+          item.std_unit = 'OK/NG'
+          item.std_min = ''
+          item.std_max = ''
+        }
+        return item
+      })
     : [createItem(1, state.measureCount)]
 
   state.items.forEach((item) => {
@@ -1815,6 +1950,14 @@ onMounted(async () => {
 .standard-unit-select {
   width: 128px;
   flex: 0 0 128px;
+}
+
+:deep(.fail-actual-box .el-input__wrapper) {
+  box-shadow: 0 0 0 1px #ef4444 inset;
+}
+
+:deep(.fail-actual-box .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #dc2626 inset, 0 0 0 1px #dc2626;
 }
 
 :deep(.standard-unit-select .el-select__wrapper) {

@@ -46,7 +46,7 @@ def register_auth_socket_handlers(get_db_conn, logger):
             cursor = conn.cursor()
 
             cursor.execute(
-                "SELECT id, dep, name, authority, eid FROM staff WHERE eid = ? AND password = ?",
+                "SELECT id, dep, name, authority, eid, ISNULL(dep_manager, 0) FROM staff WHERE eid = ? AND password = ?",
                 (account, password),
             )
             staff = cursor.fetchone()
@@ -132,6 +132,9 @@ def register_auth_socket_handlers(get_db_conn, logger):
                 "id": staff[0],
                 "account": user_account,
                 "name": (staff[2] or "").strip(),
+                "dep": (staff[1] or "").strip(),
+                "authority": staff[3],
+                "dep_manager": 1 if int(staff[5] or 0) == 1 else 0,
                 "sid": sid,
                 "menus": menu_tree,
             }

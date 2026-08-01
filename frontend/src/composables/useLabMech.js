@@ -1,5 +1,3 @@
-// C:\ai_erp\frontend\src\composables\useLabMech.js
-
 import { reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -110,6 +108,60 @@ function normalizeSpecText(key, value) {
   return text || defaultSpecTextFor(key)
 }
 
+const SOURCE_TEST_SECTION_MAP = {
+  '心部硬度': 'core_hardness',
+  '表面硬度': 'surface_hardness',
+  '滲碳深度': 'carburizing_depth',
+  '脫碳測試': 'decarb',
+  '脫探測試': 'decarb',
+  '脫碳層測試': 'decarb',
+  '延展性(鎚擊)': 'ductility',
+  '延展性（鎚擊）': 'ductility',
+  '延展性': 'ductility',
+  '氫脆化': 'hydrogen',
+  '攻速': 'drilling_speed',
+  '扭力': 'torque',
+  '鹽水噴霧': 'salt_spray',
+  '電鍍膜厚': 'coating_thickness',
+  '旋入': 'drive_torque',
+  '旋入試驗-扭力': 'drive_torque',
+  '旋入性能': 'drive_performance',
+}
+
+function sourceSectionCodesFromValues(values = {}) {
+  const codes = new Set()
+  const add = (name) => {
+    const key = SOURCE_TEST_SECTION_MAP[String(name || '').trim()]
+    if (key) codes.add(key)
+  }
+  for (const bucket of Object.values(values.tests || {})) {
+    if (!Array.isArray(bucket)) continue
+    for (const name of bucket) add(name)
+  }
+  const ranges = values.test_standard_ranges || {}
+  for (const [key, range] of Object.entries(ranges)) {
+    if (range && typeof range === 'object') {
+      const hasValue = ['min', 'max', 'unit'].some(k => String(range[k] ?? '').trim() !== '')
+      if (hasValue && key) codes.add(String(key))
+    }
+  }
+  const methods = values.test_method_by_name || {}
+  for (const name of Object.keys(methods)) add(name)
+  if (values.hardness_inspection_methods?.core) codes.add('core_hardness')
+  if (values.hardness_inspection_methods?.surface) codes.add('surface_hardness')
+  if (values.coating_thickness_spec && (values.coating_thickness_spec.min || values.coating_thickness_spec.max || values.coating_thickness_spec.unit)) {
+    codes.add('coating_thickness')
+  }
+  const hydrogenSource = values.hydrogen || values.hydrogen_data || values.hydrogen_spec || {}
+  if (hydrogenSource && Object.values(hydrogenSource).some(v => String(v ?? '').trim() !== '')) {
+    codes.add('hydrogen')
+  }
+  if (values.salt_spray_spec && (values.salt_spray_spec.white_hours || values.salt_spray_spec.red_hours || values.salt_spray_spec.other)) {
+    codes.add('salt_spray')
+  }
+  return codes
+}
+
 function buildInitialState() {
   return {
     loading: false,
@@ -180,6 +232,7 @@ function buildInitialState() {
       test_code: 'carburizing_depth',
       test_name: '滲碳層測試',
       method_code: '',
+      inspection_method: '',
       unit: 'HV/mm',
       sample_count: 3,
       spec_min: '',
@@ -198,6 +251,7 @@ function buildInitialState() {
       test_code: 'decarb',
       test_name: '脫碳層測試',
       method_code: '',
+      inspection_method: '',
       unit: 'HV',
       sample_count: 5,
       spec_min: '',
@@ -224,6 +278,7 @@ function buildInitialState() {
       test_code: 'ductility',
       test_name: '延展性測試',
       method_code: '',
+      inspection_method: '',
       unit: '',
       sample_count: 10,
       spec_min: '',
@@ -242,6 +297,7 @@ function buildInitialState() {
       test_code: 'hydrogen',
       test_name: '氫脆測試',
       method_code: '',
+      inspection_method: '',
       unit: '',
       sample_count: 10,
       spec_min: '',
@@ -269,6 +325,7 @@ function buildInitialState() {
       test_code: 'drilling_speed',
       test_name: '攻速測試',
       method_code: '',
+      inspection_method: '',
       unit: 'sec',
       sample_count: 10,
       spec_min: '',
@@ -292,6 +349,7 @@ function buildInitialState() {
       test_code: 'torque',
       test_name: '扭力測試',
       method_code: '',
+      inspection_method: '',
       unit: 'kg/cm',
       sample_count: 10,
       spec_min: '',
@@ -311,6 +369,7 @@ function buildInitialState() {
       test_code: 'salt_spray',
       test_name: '鹽霧測試',
       method_code: '',
+      inspection_method: '',
       unit: 'H',
       sample_count: 0,
       spec_min: '',
@@ -343,6 +402,7 @@ function buildInitialState() {
       test_code: 'coating_thickness',
       test_name: '膜厚測試',
       method_code: 'ASTM B568',
+      inspection_method: '',
       unit: 'μm',
       sample_count: 10,
       spec_min: '',
@@ -362,6 +422,7 @@ function buildInitialState() {
       test_code: 'drive_torque',
       test_name: '旋入試驗-扭力',
       method_code: '',
+      inspection_method: '',
       unit: 'kg/cm',
       sample_count: 10,
       spec_min: '',
@@ -381,6 +442,7 @@ function buildInitialState() {
       test_code: 'drive_performance',
       test_name: '旋入性能',
       method_code: '',
+      inspection_method: '',
       unit: '',
       sample_count: 10,
       spec_min: '',
@@ -400,6 +462,10 @@ function buildInitialState() {
 
 export function useLabMech() {
   const state = reactive(buildInitialState())
+  const visibilityState = reactive({
+    explicit: false,
+    codes: {},
+  })
 
   const templateState = reactive({
     loading: false,
@@ -424,6 +490,41 @@ export function useLabMech() {
   ]))
 
   const overallSummary = computed(() => getOverallSummary(testSections.value))
+
+  function setVisibleSectionsFromCodes(codes = []) {
+    const next = {}
+    for (const code of codes) {
+      if (code) next[String(code)] = true
+    }
+    visibilityState.explicit = true
+    visibilityState.codes = next
+  }
+
+  function setVisibleSectionsFromSourceValues(values = {}) {
+    const codes = sourceSectionCodesFromValues(values)
+    if (!codes.size) {
+      visibilityState.explicit = false
+      visibilityState.codes = {}
+      return
+    }
+    setVisibleSectionsFromCodes([...codes])
+  }
+
+  function setVisibleSectionsFromReportItems(items = []) {
+    const codes = Array.isArray(items)
+      ? items.map(item => String(item?.test_code || '').trim()).filter(Boolean)
+      : []
+    if (!codes.length) {
+      visibilityState.explicit = false
+      visibilityState.codes = {}
+      return
+    }
+    setVisibleSectionsFromCodes(codes)
+  }
+
+  function shouldShowSection(sectionKey) {
+    return !visibilityState.explicit || !!visibilityState.codes[sectionKey]
+  }
 
   function failClass(flag) {
     return flag ? 'text-red-600 font-bold' : ''
@@ -899,6 +1000,8 @@ export function useLabMech() {
         if (item.rows) target.rows = JSON.parse(JSON.stringify(item.rows))
       }
 
+      setVisibleSectionsFromReportItems(report.items || [])
+
       updateHardnessPreview(state.core_hardness)
       updateHardnessPreview(state.surface_hardness)
 
@@ -937,6 +1040,8 @@ export function useLabMech() {
   function resetForm() {
     const fresh = buildInitialState()
     Object.assign(state, fresh)
+    visibilityState.explicit = false
+    visibilityState.codes = {}
     updateHardnessPreview(state.core_hardness)
     updateHardnessPreview(state.surface_hardness)
 
@@ -1009,6 +1114,9 @@ export function useLabMech() {
     state,
     testSections,
     overallSummary,
+    shouldShowSection,
+    setVisibleSectionsFromSourceValues,
+    setVisibleSectionsFromReportItems,
 
     templateState,
     loadTemplateList,

@@ -1,0 +1,1 @@
+import e from"./customer_view-B2A5_u7r.js";import{f as t,k as o}from"./index-C6wLCF6o.js";import"./apiFetch-De8-ivig.js";const p={__name:"customer_edit",setup(r){return(m,c)=>(o(),t(e,{mode:"edit"}))}};export{p as default};

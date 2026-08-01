@@ -28,6 +28,7 @@ import pyodbc
 import getpass
 from decimal import Decimal
 from datetime import datetime, date
+import traceback
 
 from flask import Flask, jsonify, request
 from flask.json.provider import DefaultJSONProvider
@@ -75,6 +76,13 @@ def setup_logging():
 
 
 logger = setup_logging()
+
+
+def _append_login_error_log(message: str):
+    os.makedirs(LOG_DIR, exist_ok=True)
+    log_file = os.path.join(LOG_DIR, "rt_login_error.log")
+    with open(log_file, "a", encoding="utf-8") as fh:
+        fh.write(message.rstrip() + "\n")
 
 
 # --- DB helper ---
@@ -295,6 +303,23 @@ def create_app():
             return exc
 
         logger.exception("Unhandled exception on %s %s", request.method, request.path)
+
+        try:
+            _append_login_error_log(
+                "\n".join([
+                    f"[ERROR] unhandled exception",
+                    f"method={request.method}",
+                    f"path={request.path}",
+                    f"query={request.query_string.decode('utf-8', errors='ignore')}",
+                    f"remote_addr={request.headers.get('X-Forwarded-For') or request.remote_addr}",
+                    f"user_agent={request.headers.get('User-Agent')}",
+                    f"exception={exc!r}",
+                    traceback.format_exc().rstrip(),
+                    "",
+                ])
+            )
+        except Exception as log_exc:
+            logger.exception("failed to write rt_login_error.log: %s", log_exc)
 
         if request.path != "/api/client-error":
             try:

@@ -2,9 +2,15 @@
 #C:\ai_erp\backend\routes\realtime.py
 from __future__ import annotations
 from flask import Blueprint, request, jsonify, current_app
+import logging
+import os
 import uuid
 import time
 import threading
+import traceback
+from logging.handlers import RotatingFileHandler
+
+from path_config import LOG_DIR
 
 # Socket.IO（可用就用；不可用就退化成純 HTTP）
 try:
@@ -14,6 +20,7 @@ except Exception:
     # 不 raise，讓純 HTTP 也能跑
 
 bp = Blueprint("rt", __name__)  # 不要 url_prefix
+logger = logging.getLogger("ai_erp")
 # -----------------------------
 # 全域記憶體（先簡單做）
 # -----------------------------
@@ -25,6 +32,9 @@ _LOCK = threading.Lock()
 
 # session 多久沒動就清掉（秒）
 SESSION_TTL = 60 * 60  # 1 小時
+_LOGIN_ERROR_LOGGER_NAME = "ai_erp.rt_login_error"
+_login_error_logger = None
+_LOGIN_ERROR_FILE = os.path.join(LOG_DIR, "rt_login_error.log")
 
 
 # -----------------------------
@@ -32,6 +42,76 @@ SESSION_TTL = 60 * 60  # 1 小時
 # -----------------------------
 def _now():
     return int(time.time())
+
+
+def _text(value) -> str:
+    return "" if value is None else str(value).strip()
+
+
+def _get_login_error_logger():
+    global _login_error_logger
+    if _login_error_logger is not None:
+        return _login_error_logger
+
+    os.makedirs(LOG_DIR, exist_ok=True)
+    err_logger = logging.getLogger(_LOGIN_ERROR_LOGGER_NAME)
+    err_logger.setLevel(logging.INFO)
+    err_logger.propagate = False
+
+    log_file = os.path.join(LOG_DIR, "rt_login_error.log")
+    abs_log_file = os.path.abspath(log_file)
+    if not any(
+        isinstance(h, RotatingFileHandler) and getattr(h, "baseFilename", "") == abs_log_file
+        for h in err_logger.handlers
+    ):
+        handler = RotatingFileHandler(
+            log_file,
+            maxBytes=5 * 1024 * 1024,
+            backupCount=5,
+            encoding="utf-8",
+        )
+        handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+        err_logger.addHandler(handler)
+
+    _login_error_logger = err_logger
+    return err_logger
+
+
+def _append_login_error_log(message: str):
+    os.makedirs(LOG_DIR, exist_ok=True)
+    with open(_LOGIN_ERROR_FILE, "a", encoding="utf-8") as fh:
+        fh.write(message.rstrip() + "\n")
+
+
+def _log_login_exception(exc: Exception, account: str, sid: str):
+    remote_addr = request.headers.get("X-Forwarded-For") or request.remote_addr or ""
+    tb_text = traceback.format_exc()
+    payload = request.get_json(silent=True)
+    try:
+        _get_login_error_logger().exception(
+            "🚨 /api/rt/login failed account=%s sid=%s remote_addr=%s",
+            account,
+            sid,
+            remote_addr,
+        )
+    except Exception:
+        pass
+
+    try:
+        _append_login_error_log(
+            "\n".join([
+                f"[ERROR] /api/rt/login failed",
+                f"account={account}",
+                f"sid={sid}",
+                f"remote_addr={remote_addr}",
+                f"request_json={payload!r}",
+                f"exception={exc!r}",
+                tb_text.rstrip(),
+                "",
+            ])
+        )
+    except Exception:
+        pass
 
 
 def _new_sid():
@@ -47,7 +127,7 @@ def _ensure_session(sid: str | None):
     """確保 sid 存在；sid 不存在就建立新的，回傳 sid。
     ✅ 允許 client 帶入 sid：不存在就用該 sid 建立（避免必打 /session）
     """
-    sid = (sid or "").strip()
+    sid = _text(sid)
     with _LOCK:
         if not sid:
             sid = _new_sid()
@@ -70,7 +150,7 @@ def _cleanup_expired():
         dead = [sid for sid, s in sessions.items() if int(s.get("ts") or 0) < cut]
         for sid in dead:
             u = (sessions.get(sid) or {}).get("user") or {}
-            acc = (u.get("account") or "").strip()
+            acc = _text(u.get("account"))
             if acc:
                 cur = online_users.get(acc) or {}
                 if (cur.get("sid") or "") == sid:
@@ -121,10 +201,12 @@ def _broadcast_user_list():
 @bp.post("/heartbeat")
 def heartbeat():
     _cleanup_expired()
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        data = {}
     sid = _ensure_session(data.get("sid"))
     user = data.get("user") or {}
-    acc = (user.get("account") or "").strip()
+    acc = _text(user.get("account"))
     
     # 只要有帳號，就更新他在線狀態
     if acc:
@@ -157,24 +239,28 @@ def create_session():
 # -----------------------------
 @bp.post("/login")
 def login():
-    _cleanup_expired()
-
-    data = request.json or {}
-    sid = _ensure_session(data.get("sid"))
-
-    account = (data.get("account") or "").strip()
-    password = (data.get("password") or "").strip()
-
-    if not account or not password:
-        return jsonify({"ok": False, "msg": "請輸入帳號密碼", "sid": sid}), 400
-
     conn = None
+    sid = ""
+    account = ""
     try:
+        _cleanup_expired()
+
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            data = {}
+        sid = _ensure_session(data.get("sid"))
+
+        account = _text(data.get("account"))
+        password = _text(data.get("password"))
+
+        if not account or not password:
+            return jsonify({"ok": False, "msg": "請輸入帳號密碼", "sid": sid}), 400
+
         conn = current_app.config["GET_DB_CONN"]()
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT id, dep, name, authority, eid FROM staff WHERE eid = ? AND password = ?",
+            "SELECT id, dep, name, authority, eid, ISNULL(dep_manager, 0) AS dep_manager FROM staff WHERE eid = ? AND password = ?",
             (account, password),
         )
         staff = cursor.fetchone()
@@ -182,7 +268,7 @@ def login():
             return jsonify({"ok": False, "msg": "帳號密碼錯誤", "sid": sid}), 401
 
         auth_id = staff[3]
-        user_account = str(staff[4] or "").strip()
+        user_account = _text(staff[4])
 
         # --- 主選單 ---
         cursor.execute(
@@ -200,8 +286,8 @@ def login():
 
         menu_tree = []
         for m in main_raw:
-            main_title = (m[0] or "").strip()
-            refno = (m[1] or "").strip()
+            main_title = _text(m[0])
+            refno = _text(m[1])
 
             cursor.execute(
                 """
@@ -223,9 +309,9 @@ def login():
 
             subs = []
             for s in cursor.fetchall():
-                title = (s[0] or "").strip()
-                vue = (s[1] or "").strip() if s[1] else ""
-                view_name = (s[2] or "").strip() if s[2] else ""
+                title = _text(s[0])
+                vue = _text(s[1]) if s[1] else ""
+                view_name = _text(s[2]) if s[2] else ""
                 serial = s[3] if len(s) > 3 else None
 
                 subs.append({
@@ -246,7 +332,10 @@ def login():
         user_info = {
             "id": staff[0],
             "account": user_account,
-            "name": (staff[2] or "").strip(),
+            "name": _text(staff[2]),
+            "dep": _text(staff[1]),
+            "authority": staff[3],
+            "dep_manager": 1 if int(staff[5] or 0) == 1 else 0,
             "sid": sid,
             "menus": menu_tree,
         }
@@ -268,6 +357,8 @@ def login():
         })
 
     except Exception as e:
+        logger.exception("🚨 /api/rt/login failed")
+        _log_login_exception(e, account, sid)
         return jsonify({"ok": False, "msg": f"系統錯誤: {str(e)}", "sid": sid}), 500
     finally:
         try:
@@ -331,7 +422,9 @@ def poll():
 def request_user_list():
     _cleanup_expired()
 
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        data = {}
     sid = _ensure_session(data.get("sid"))
 
     with _LOCK:
@@ -352,14 +445,16 @@ def request_user_list():
 def logout():
     _cleanup_expired()
 
-    data = request.json or {}
-    sid = (data.get("sid") or "").strip()
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        data = {}
+    sid = _text(data.get("sid"))
     if not sid:
         return jsonify({"ok": True})
 
     with _LOCK:
         user = (sessions.get(sid) or {}).get("user") or {}
-        acc = (user.get("account") or "").strip()
+        acc = _text(user.get("account"))
 
         if acc:
             cur = online_users.get(acc) or {}

@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
     create_access_token,
@@ -43,12 +45,22 @@ def login():
         name = str(user["name"]).strip()
         authority = str(user["authority"]).strip()
 
+        signature = db.session.execute(
+            text("""
+                SELECT TOP 1 ISNULL(sign_c, sign_e) AS signature
+                FROM staff
+                WHERE eid = :eid
+            """),
+            {"eid": account}
+        ).scalar()
+        signature = str(signature or "").strip()
         token = create_access_token(
             identity=user_id,
             additional_claims={
                 "account": account,
                 "name": name,
-                "authority": authority
+                "authority": authority,
+                "signature": signature
             }
         )
 
@@ -57,7 +69,14 @@ def login():
         return jsonify(
             ok=True,
             access_token=token,
-            user={"id": int(user_id), "account": account, "name": name, "authority": authority}
+            user={
+                "id": int(user_id),
+                "account": account,
+                "name": name,
+                "authority": authority,
+                "signature": signature,
+                "signature_path": f"/pic/itac/{os.path.basename(signature)}" if signature else "",
+            }
         )
 
     except Exception:
@@ -70,11 +89,14 @@ def me():
     user_id = get_jwt_identity()  # 字串
     claims = get_jwt()
 
+    signature = str(claims.get("signature") or "").strip()
     user = {
         "id": int(user_id),
         "account": claims.get("account"),
         "name": claims.get("name"),
-        "authority": claims.get("authority")
+        "authority": claims.get("authority"),
+        "signature": signature,
+        "signature_path": f"/pic/itac/{os.path.basename(signature)}" if signature else "",
     }
 
     logger.info(f"👤 /me called by {user.get('account')}")

@@ -31,7 +31,7 @@
     <!-- MAIN -->
     <main class="lab-main">
       <div class="lab-shell lab-scroll-area">
-        <el-card shadow="never" class="mb-4">
+        <el-card v-if="shouldShowSection('core_hardness')" shadow="never" class="mb-4">
           <template #header>
             <div class="flex items-center justify-between gap-3">
               <div class="font-semibold">來源委託單</div>
@@ -94,7 +94,7 @@
         </el-card>
 
         <!-- 基本資料 -->
-        <el-card shadow="never" class="mb-4">
+        <el-card v-if="shouldShowSection('surface_hardness')" shadow="never" class="mb-4">
           <template #header>
             <div class="font-semibold">基本資料</div>
           </template>
@@ -155,7 +155,7 @@
         </el-card>
 
         <!-- 心部硬度 -->
-        <el-card shadow="never" class="mb-4">
+        <el-card v-if="shouldShowSection('carburizing_depth')" shadow="never" class="mb-4">
           <template #header>
             <div class="flex items-center justify-between">
               <div class="font-semibold">一．心部硬度</div>
@@ -450,7 +450,7 @@
                 allow-create
                 default-first-option
                 clearable
-                placeholder="試驗方法"
+                placeholder="檢驗規範"
                 class="flex-1"
                 @change="onSharedOptionSelected('method_code', $event)"
               >
@@ -463,6 +463,7 @@
               </el-select>
               <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'carburizing_depth')">+</el-button>
             </div>
+            <el-input v-model="state.carburizing_depth.inspection_method" placeholder="檢驗方式" />
             <el-input v-model="state.carburizing_depth.spec_min" placeholder="下限" />
             <el-input v-model="state.carburizing_depth.spec_max" placeholder="上限" />
             <el-input-number v-model="state.carburizing_depth.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('carburizing_depth')" />
@@ -527,7 +528,7 @@
 
         <!-- 脫碳層 / 鹽霧 -->
         <el-row :gutter="16" class="mb-4">
-          <el-col :xs="24" :lg="12">
+            <el-col v-if="shouldShowSection('decarb')" :xs="24" :lg="12">
             <el-card shadow="never" class="h-full">
               <template #header>
                 <div class="flex items-center justify-between">
@@ -544,7 +545,7 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="試驗方法"
+                    placeholder="檢驗規範"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
@@ -552,6 +553,7 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'decarb')">+</el-button>
                 </div>
+                <el-input v-model="state.decarb.inspection_method" placeholder="檢驗方式" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.decarb.unit"
@@ -628,7 +630,7 @@
             </el-card>
           </el-col>
 
-          <el-col :xs="24" :lg="12">
+            <el-col v-if="shouldShowSection('salt_spray')" :xs="24" :lg="12">
             <el-card shadow="never" class="h-full">
               <template #header>
                 <div class="flex items-center justify-between">
@@ -645,7 +647,7 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="試驗方法"
+                    placeholder="檢驗規範"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
@@ -653,6 +655,7 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'salt_spray')">+</el-button>
                 </div>
+                <el-input v-model="state.salt_spray.inspection_method" placeholder="檢驗方式" />
 
                 <el-input-number v-model="state.salt_spray.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" />
 
@@ -751,7 +754,7 @@
         </el-row>
 
         <!-- 氫脆 -->
-        <el-card shadow="never" class="mb-4">
+        <el-card v-if="shouldShowSection('hydrogen')" shadow="never" class="mb-4">
           <template #header>
             <div class="flex items-center justify-between">
               <div class="font-semibold">六．氫脆測試</div>
@@ -767,7 +770,7 @@
                 allow-create
                 default-first-option
                 clearable
-                placeholder="試驗方法"
+                placeholder="檢驗規範"
                 class="flex-1"
                 @change="onSharedOptionSelected('method_code', $event)"
               >
@@ -775,6 +778,7 @@
               </el-select>
               <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'hydrogen')">+</el-button>
             </div>
+            <el-input v-model="state.hydrogen.inspection_method" placeholder="檢驗方式" />
             <el-select v-model="state.hydrogen.data.test_hours" placeholder="測試時間">
               <el-option label="24 小時" :value="24" />
               <el-option label="48 小時" :value="48" />
@@ -859,7 +863,7 @@
 
         <!-- 攻速 / 扭力 -->
         <el-row :gutter="16" class="mb-4">
-          <el-col :xs="24" :lg="12">
+          <el-col v-if="shouldShowSection('drilling_speed')" :xs="24" :lg="12">
             <el-card shadow="never" class="mb-4">
               <template #header>
                 <div class="flex items-center justify-between">
@@ -876,15 +880,16 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="試驗方法"
+                    placeholder="檢驗規範"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
                     <el-option v-for="o in methodOptions" :key="`method-drill-${o.value}`" :label="o.label" :value="o.value" />
-                  </el-select>
-                  <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drilling_speed')">+</el-button>
-                </div>
-                <el-input v-model="state.drilling_speed.data.plate_thickness" placeholder="鐵板厚度" />
+                </el-select>
+                <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drilling_speed')">+</el-button>
+              </div>
+              <el-input v-model="state.drilling_speed.inspection_method" placeholder="檢驗方式" class="mb-3" />
+              <el-input v-model="state.drilling_speed.data.plate_thickness" placeholder="鐵板厚度" />
                 <el-input v-model="state.drilling_speed.data.plate_hardness" placeholder="鐵板硬度" />
                 <el-input v-model="state.drilling_speed.data.test_time_sec" placeholder="測試時間 Sec" />
                 <el-input v-model="state.drilling_speed.spec_min" placeholder="下限(可空)" />
@@ -945,7 +950,7 @@
             </el-card>
           </el-col>
 
-          <el-col :xs="24" :lg="12">
+          <el-col v-if="shouldShowSection('torque')" :xs="24" :lg="12">
             <el-card shadow="never" class="mb-4">
               <template #header>
                 <div class="flex items-center justify-between">
@@ -962,7 +967,7 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="試驗方法"
+                    placeholder="檢驗規範"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
@@ -970,6 +975,7 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'torque')">+</el-button>
                 </div>
+                <el-input v-model="state.torque.inspection_method" placeholder="檢驗方式" />
                 <el-input-number v-model="state.torque.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('torque')" />
                 <el-input v-model="state.torque.spec_min" placeholder="下限" />
                 <el-input v-model="state.torque.spec_max" placeholder="上限" />
@@ -1051,15 +1057,16 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="測試方法：ASTM B568"
+                    placeholder="檢驗規範：ASTM B568"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
                     <el-option v-for="o in methodOptions" :key="`method-coating-${o.value}`" :label="o.label" :value="o.value" />
-                  </el-select>
-                  <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'coating_thickness')">+</el-button>
-                </div>
-                <el-input-number v-model="state.coating_thickness.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('coating_thickness')" />
+                </el-select>
+                <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'coating_thickness')">+</el-button>
+              </div>
+              <el-input v-model="state.coating_thickness.inspection_method" placeholder="檢驗方式" />
+              <el-input-number v-model="state.coating_thickness.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('coating_thickness')" />
                 <el-input v-model="state.coating_thickness.spec_min" placeholder="標準值下限" />
                 <el-input v-model="state.coating_thickness.spec_max" placeholder="標準值上限" />
                 <div class="flex items-center gap-2">
@@ -1130,7 +1137,7 @@
                     allow-create
                     default-first-option
                     clearable
-                    placeholder="試驗方法"
+                    placeholder="檢驗規範"
                     class="flex-1"
                     @change="onSharedOptionSelected('method_code', $event)"
                   >
@@ -1138,6 +1145,7 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drive_torque')">+</el-button>
                 </div>
+                <el-input v-model="state.drive_torque.inspection_method" placeholder="檢驗方式" />
                 <el-input-number v-model="state.drive_torque.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('drive_torque')" />
                 <el-input v-model="state.drive_torque.spec_min" placeholder="下限" />
                 <el-input v-model="state.drive_torque.spec_max" placeholder="上限" />
@@ -1198,7 +1206,7 @@
         </el-row>
 
         <!-- 延展性 / 旋入性能 -->
-        <el-card shadow="never" class="mb-4">
+        <el-card v-if="shouldShowSection('drive_performance') || shouldShowSection('ductility')" shadow="never" class="mb-4">
           <template #header>
             <div class="flex items-center justify-between">
               <div class="font-semibold">延展性測試 / 十一．旋入性能</div>
@@ -1210,7 +1218,7 @@
           </template>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
+            <div v-if="shouldShowSection('drive_performance')">
               <div class="font-medium mb-2">旋入性能</div>
               <div class="flex items-center gap-2 mb-3">
                 <el-select
@@ -1219,7 +1227,7 @@
                   allow-create
                   default-first-option
                   clearable
-                  placeholder="試驗方法"
+                  placeholder="檢驗規範"
                   class="flex-1"
                   @change="onSharedOptionSelected('method_code', $event)"
                 >
@@ -1227,6 +1235,7 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drive_performance')">+</el-button>
               </div>
+              <el-input v-model="state.drive_performance.inspection_method" placeholder="檢驗方式" class="mb-3" />
               <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 mb-3">
                 <el-input-number
                   v-model="state.drive_performance.sample_count"
@@ -1280,7 +1289,7 @@
               </div>
             </div>
 
-            <div>
+            <div v-if="shouldShowSection('ductility')">
               <div class="font-medium mb-2">延展性</div>
               <div class="flex items-center gap-2 mb-3">
                 <el-select
@@ -1289,7 +1298,7 @@
                   allow-create
                   default-first-option
                   clearable
-                  placeholder="試驗方法"
+                  placeholder="檢驗規範"
                   class="flex-1"
                   @change="onSharedOptionSelected('method_code', $event)"
                 >
@@ -1297,6 +1306,7 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'ductility')">+</el-button>
               </div>
+              <el-input v-model="state.ductility.inspection_method" placeholder="檢驗方式" class="mb-3" />
               <div class="grid grid-cols-1 xl:grid-cols-[180px_1fr] gap-3 mb-3 items-center">
                 <div class="flex items-center gap-2">
                   <span class="text-sm text-gray-600">檢測數</span>
@@ -1662,6 +1672,7 @@ const {
   state,
   failClass,
   rowFailByResult,
+  shouldShowSection,
   loadReport,
   saveReport,
   exportDocx,
@@ -1673,6 +1684,7 @@ const {
   loadTemplateDetail,
   createNewReportFromTemplate,
   syncSectionRowsToCount,
+  setVisibleSectionsFromSourceValues,
 } = useLabMech()
 const route = useRoute()
 const router = useRouter()
@@ -2181,6 +2193,7 @@ function applyDefaultHeaderValues() {
 
 function applySourceToHeader(values = {}, sourceFormId = '') {
   syncSourceStateFromValues(values, sourceFormId)
+  setVisibleSectionsFromSourceValues(values)
 
   const sampleCount = Number(values.sample_qty)
   const namedMethods = values.test_method_by_name || {}
@@ -2188,6 +2201,12 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
   const standardRanges = values.test_standard_ranges || {}
   const coatingSpec = values.coating_thickness_spec || {}
   const saltSpec = values.salt_spray_spec || {}
+  const ductilityMethods = [
+    ...(Array.isArray(namedMethods['延展性']) ? namedMethods['延展性'] : []),
+    ...(Array.isArray(namedMethods['延展性(鎚擊)']) ? namedMethods['延展性(鎚擊)'] : []),
+    ...(Array.isArray(namedMethods['延展性（鎚擊）']) ? namedMethods['延展性（鎚擊）'] : []),
+  ]
+  const ductilityAngles = ductilityMethods.filter(method => ['5°', '7°', '10°'].includes(String(method || '').trim()))
 
   state.header.entrust_no = values.lab_no || ''
   state.header.product_name = values.sample_desc || values.part_no || state.header.product_name
@@ -2229,6 +2248,9 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
     if (range && typeof range === 'object') {
       state[sectionKey].spec_min = range.min ?? state[sectionKey].spec_min
       state[sectionKey].spec_max = range.max ?? state[sectionKey].spec_max
+      if (sectionKey === 'carburizing_depth' && range.unit) {
+        state[sectionKey].unit = range.unit
+      }
     }
   }
   if (Array.isArray(namedMethods['電鍍膜厚']) && namedMethods['電鍍膜厚'].length) {
@@ -2236,6 +2258,9 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
   }
   if (Array.isArray(namedMethods['鹽水噴霧']) && namedMethods['鹽水噴霧'].length) {
     state.salt_spray.method_code = namedMethods['鹽水噴霧'][0]
+  }
+  if (ductilityAngles.length) {
+    state.ductility.spec_text = `${ductilityAngles.join(' / ')} (螺絲頭部與桿徑交接處不可發生斷裂)`
   }
   state.core_hardness.inspection_method = hardnessMethods.core || state.core_hardness.inspection_method
   state.surface_hardness.inspection_method = hardnessMethods.surface || state.surface_hardness.inspection_method
@@ -2249,11 +2274,20 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
     values.salt_spray_type === '紅鏽' ? values.salt_spray_hours : state.salt_spray.data.red_spec_hours
   )
   if (Number.isFinite(sampleCount) && sampleCount > 0) {
-    for (const key of ['core_hardness', 'surface_hardness', 'coating_thickness', 'salt_spray']) {
+    for (const key of ['core_hardness', 'surface_hardness', 'coating_thickness', 'salt_spray', 'ductility', 'hydrogen', 'drilling_speed', 'torque', 'drive_torque', 'drive_performance']) {
       state[key].sample_count = Math.floor(sampleCount)
       if (key !== 'salt_spray') syncSectionRowsToCount(key)
     }
   }
+
+  const hydrogenSource = values.hydrogen || values.hydrogen_data || values.hydrogen_spec || {}
+  state.hydrogen.data.plate_thickness = hydrogenSource.plate_thickness ?? values.plate_thickness ?? state.hydrogen.data.plate_thickness
+  state.hydrogen.data.hole_diameter = hydrogenSource.hole_diameter ?? values.hole_diameter ?? state.hydrogen.data.hole_diameter
+  state.hydrogen.data.plate_hardness = hydrogenSource.plate_hardness ?? values.plate_hardness ?? state.hydrogen.data.plate_hardness
+  state.hydrogen.data.tighter_torque = hydrogenSource.tighter_torque ?? values.tighter_torque ?? state.hydrogen.data.tighter_torque
+  state.hydrogen.data.no_failures_after_hours = hydrogenSource.no_failures_after_hours ?? values.no_failures_after_hours ?? state.hydrogen.data.no_failures_after_hours
+  state.hydrogen.data.test_hours = hydrogenSource.test_hours ?? values.test_hours ?? state.hydrogen.data.test_hours
+  state.hydrogen.data.sample_count = hydrogenSource.sample_count ?? values.sample_qty ?? state.hydrogen.data.sample_count
 
   applyDefaultHeaderValues()
   state.header.remarks = [

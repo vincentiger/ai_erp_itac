@@ -1,0 +1,81 @@
+# 發版與更新流程紀錄
+
+## 目的
+
+這份文件用來記錄目前專案的實際發版方式，避免之後再次混淆 `D:\ai_erp_itac` 與 `C:\ai_erp_itac` 的用途，也方便回溯「原始碼修改 -> 發版打包 -> 客戶主機更新」的完整流程。
+
+## 目錄分工
+
+### `D:\ai_erp_itac`
+
+這是實際開發與修改的來源專案。
+
+原始碼修正、除錯、功能調整都以這份為準。
+
+### `C:\ai_erp_itac`
+
+這是發版與部署的暫存/輸出目錄。
+
+實務上會把需要交付的檔案同步到這裡，再由這裡產生 `release.zip`。
+
+### 客戶主機
+
+客戶端會執行 `update.bat`，將 `release.zip` 解壓縮並覆蓋到既定位置，完成更新。
+
+## 實際流程
+
+1. 在 `D:\ai_erp_itac` 修改原始碼。
+2. 確認修正內容已涵蓋登入、後端 API、Socket 或前端相關檔案。
+3. 依照既有流程把原始碼轉譯或同步到 `C:\ai_erp_itac`。
+4. 在 `C:\ai_erp_itac` 產出前端/部署內容，讓 `release.zip` 內容和最新修改一致。
+5. 以 `C:\ai_erp_itac` 的輸出內容建立 `release.zip`。
+6. 若需要驗證，先比對 `release.zip` 的 SHA256、大小與內含檔案。
+7. 將 `release.zip` 送到客戶主機。
+8. 由客戶主機執行 `update.bat`。
+9. `update.bat` 解壓縮 `release.zip`，完成更新。
+
+## 目前這套專案的慣例
+
+- `D:\ai_erp_itac` 是來源專案，平常只改這裡的原始碼。
+- `C:\ai_erp_itac` 是輸出/發版工作區，會放轉譯後的 `pyd`、前端打包檔、`nginx` 內容與 `release.zip`。
+- 客戶主機不是直接拿 `D:` 的原始碼，而是吃 `release.zip` 更新。
+- 所以只要要出給客戶，最後一定要確認 `C:\ai_erp_itac\release.zip` 是最新版本。
+
+## 這次登入錯誤的修正方式
+
+本次處理的是登入階段的字串型別問題：
+
+- 問題現象是 `"'int' object has no attribute 'strip'"`。
+- 根因是登入流程中，某些欄位有機會是數字型別，但程式直接呼叫 `.strip()`。
+- 修正方式是先把值安全轉成字串，再做 `.strip()`。
+- 另外也確認到 `backend\routes\realtime.cp310-win_amd64.pyd` 會優先於 `backend\routes\realtime.py` 被載入，因此即使 `.py` 已更新，客戶主機若保留舊 `.pyd`，仍可能繼續吃到舊邏輯。
+- 所以更新流程已補上「清除舊 `realtime.pyd` / `__pycache__`」的保險，避免登入修正被舊編譯模組蓋回去。
+
+### 已涵蓋的登入入口
+
+- HTTP 登入 API
+- 舊版 `auth` blueprint
+- Socket.IO 登入事件
+- 線上名單同步相關流程
+
+### 這次特別確認的部署路徑
+
+- 實際執行的更新腳本以 `C:\ai_erp_itac\update.bat` 為主。
+- `update.bat` 會在部署後刪除舊的 `backend\routes\realtime.cp310-win_amd64.pyd` 與相關 `__pycache__`。
+- `startup.bat` 也有同樣的清理保險，確保啟動時不會再誤載舊模組。
+
+## 發版時的檢查重點
+
+1. 確認原始碼是改在 `D:\ai_erp_itac`。
+2. 確認發版輸出是在 `C:\ai_erp_itac`。
+3. 確認 `release.zip` 是最新時間戳。
+4. 確認客戶主機上的 `update.bat` 仍然指向正確的解壓縮與更新路徑。
+5. 確認登入後不會再出現型別造成的 `.strip()` 錯誤。
+6. 確認被修正的頁面或 API，在 `D:`、`C:` 與 `release.zip` 三邊內容一致。
+
+## 建議的後續做法
+
+1. 每次修復後都先在 `D:\ai_erp_itac` 驗證。
+2. 發版前再同步到 `C:\ai_erp_itac`。
+3. 打包前確認 `release.zip` 的內容是最新版本。
+4. 客戶端更新後先測登入，再測主功能。

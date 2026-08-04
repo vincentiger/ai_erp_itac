@@ -1,1 +1,0 @@
-import a from"./labMech-Bl2NJJkC.js";import{f as r,k as e}from"./index-Cioy3_D5.js";import"./apiFetch-De8-ivig.js";const s={__name:"labMechStandard",setup(t){return(o,c)=>(e(),r(a,{"standard-mode":""}))}};export{s as default};

@@ -882,7 +882,11 @@ function parseMeasurementNumber(value) {
     const sign = deg < 0 ? -1 : 1
     return sign * (Math.abs(deg) + min / 60 + sec / 3600)
   }
-  const cleaned = text.replace(/[°∘度℃%]/g, '').trim()
+  const cleaned = text
+    .replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
+    .replace(/[\s,]*(?:mm|㎜|cm|㎝|m|μm|um|nm|inch|in|%|℃|°|度)\s*$/ig, '')
+    .replace(/\s+/g, '')
+    .trim()
   const num = Number(cleaned)
   return Number.isFinite(num) ? num : null
 }

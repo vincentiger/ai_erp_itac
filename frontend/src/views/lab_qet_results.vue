@@ -3,9 +3,7 @@
     <main class="mx-auto w-[94vw] max-w-[1500px] pt-4 pb-6">
       <section class="bg-white border border-slate-200 overflow-hidden">
         <div class="px-4 py-3 flex items-center justify-between border-b border-slate-200 gap-3 flex-wrap">
-          <div>
-            <div class="font-semibold text-slate-900">尺寸原始紀錄表判定結果</div>
-          </div>
+          <div />
           <button
             class="h-9 px-3 bg-white border border-slate-300 disabled:opacity-40"
             :disabled="loading"
@@ -14,6 +12,57 @@
           >
             重新整理
           </button>
+        </div>
+
+        <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <input
+              v-model.trim="searchLabNo"
+              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              placeholder="委託單編號"
+              type="text"
+              @keyup.enter="applyFilters"
+            >
+            <input
+              v-model.trim="searchCustomer"
+              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              placeholder="客戶名稱"
+              type="text"
+              @keyup.enter="applyFilters"
+            >
+            <select
+              v-model="searchResult"
+              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+            >
+              <option value="">全部判定結果</option>
+              <option value="PASS">PASS</option>
+              <option value="FAIL">FAIL</option>
+              <option value="PENDING">PENDING</option>
+            </select>
+            <input
+              v-model.trim="searchReviewer"
+              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              placeholder="審查人"
+              type="text"
+              @keyup.enter="applyFilters"
+            >
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <button
+              class="h-9 px-3 rounded bg-slate-900 text-white"
+              type="button"
+              @click="applyFilters"
+            >
+              搜尋
+            </button>
+            <button
+              class="h-9 px-3 rounded bg-white border border-slate-300"
+              type="button"
+              @click="clearFilters"
+            >
+              清除
+            </button>
+          </div>
         </div>
 
         <div class="table-scroll">
@@ -48,13 +97,18 @@
                   無資料
                 </td>
               </tr>
+              <tr v-else-if="!loading && filteredRows.length === 0">
+                <td class="px-3 py-8 text-center text-slate-500" colspan="7">
+                  查無符合條件的資料
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <div class="px-4 py-3 flex items-center justify-between border-t border-slate-200 gap-3 flex-wrap">
           <div class="text-xs text-slate-500">
-            共 {{ rows.length }} 筆，第 {{ page }} / {{ totalPages }} 頁，每頁 {{ pageSize }} 筆
+            共 {{ filteredRows.length }} 筆，第 {{ page }} / {{ totalPages }} 頁，每頁 {{ pageSize }} 筆
           </div>
           <div class="flex items-center gap-2">
             <button
@@ -91,17 +145,51 @@ const rows = ref([])
 const loading = ref(false)
 const page = ref(1)
 const pageSize = 20
+const searchLabNo = ref('')
+const searchCustomer = ref('')
+const searchResult = ref('')
+const searchReviewer = ref('')
 const BASE_URL = import.meta.env.BASE_URL || '/ai/'
 const qetApi = (p) => {
   const cleanBase = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`
   return `${cleanBase}api/lab/qet/${String(p || '').replace(/^\/+/, '')}`
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(rows.value.length / pageSize)))
+const filteredRows = computed(() => {
+  const labNo = searchLabNo.value.toLowerCase()
+  const customer = searchCustomer.value.toLowerCase()
+  const result = searchResult.value.toUpperCase()
+  const reviewer = searchReviewer.value.toLowerCase()
+  return rows.value.filter((row) => {
+    const entrustNo = String(row.entrust_no || '').toLowerCase()
+    const customerName = String(row.customer_name || '').toLowerCase()
+    const finalResult = String(row.final_result || '').toUpperCase()
+    const judgeReviewer = String(row.judge_reviewer || '').toLowerCase()
+    if (labNo && !entrustNo.includes(labNo)) return false
+    if (customer && !customerName.includes(customer)) return false
+    if (result && finalResult !== result) return false
+    if (reviewer && !judgeReviewer.includes(reviewer)) return false
+    return true
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize)))
 const pagedRows = computed(() => {
   const start = (page.value - 1) * pageSize
-  return rows.value.slice(start, start + pageSize)
+  return filteredRows.value.slice(start, start + pageSize)
 })
+
+function applyFilters() {
+  page.value = 1
+}
+
+function clearFilters() {
+  searchLabNo.value = ''
+  searchCustomer.value = ''
+  searchResult.value = ''
+  searchReviewer.value = ''
+  page.value = 1
+}
 
 async function reload() {
   loading.value = true

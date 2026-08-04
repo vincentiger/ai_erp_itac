@@ -139,7 +139,7 @@ const routes = [
     path: '/lab/qet/results',
     name: 'lab_qet_results',
     component: () => import('@/views/lab_qet_results.vue'),
-    meta: { title: '尺寸原始紀錄表判定結果' },
+    meta: { title: '判定結果' },
   },
   {
     path: '/lab/mech',

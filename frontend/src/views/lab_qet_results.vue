@@ -5,7 +5,6 @@
         <div class="px-4 py-3 flex items-center justify-between border-b border-slate-200 gap-3 flex-wrap">
           <div>
             <div class="font-semibold text-slate-900">尺寸原始紀錄表判定結果</div>
-            <div class="text-xs text-slate-500 mt-1">此頁僅供瀏覽，顯示已完成判定的記錄表。</div>
           </div>
           <button
             class="h-9 px-3 bg-white border border-slate-300 disabled:opacity-40"

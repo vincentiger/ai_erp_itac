@@ -80,6 +80,40 @@
 - `update.bat` 的實際更新流程是先讀取 `C:\ai_erp_itac\release.zip`，再在結尾接著執行 `startup.bat`。
 - 因此只要有改到前端解析或判定流程，就一定要同步更新 `C:\ai_erp_itac\release.zip`，並依現場需要複製一份到 `C:\ai_erp_itac\release\release.zip` 方便比對。
 
+## 這次補上的 live 目錄與 release.zip 對齊流程
+
+這次再確認到一個容易混淆的點：
+
+- `127.0.0.1:81` 實際是由 `C:\ai_erp_itac\nginx\nginx.exe` 提供服務。
+- nginx 的靜態根目錄是 `C:\ai_erp_itac\nginx\html`。
+- 所以瀏覽器目前看到的 `/ai/assets/*`，來源是 `C:\ai_erp_itac\nginx\html\ai\assets\*`，不是單純看 `release.zip` 裡的內容。
+
+因此現在的正確對齊方式是：
+
+1. 先確認 `C:\ai_erp_itac\nginx\html\ai` 是目前本機 live 版本。
+2. 再以 `C:\ai_erp_itac` 現況重新打包 `release.zip`，讓壓縮檔內容跟 live 目錄一致。
+3. 必要時把同一份 `release.zip` 複製到 `C:\ai_erp_itac\release\release.zip`，方便對照與部署。
+
+這次實際驗到的對照結果：
+
+- live page 目前引用的是 `index-AfCXgaGA.js`、`inspectStandard-Dbo7IJWt.js`、`inspectStandard-DjPmWYtU.css`
+- 重打包後的 `release.zip` 已經跟這組 live assets 對齊
+- 重新打包後的 `release.zip` SHA256 為 `31B41C3F58C3D1FB6DF2FA1E09467AE13A2D99F1DE366ABC5FDC45443469CD49`
+
+## 這次更新的 `update.bat` 行為
+
+目前 `C:\ai_erp_itac\update.bat` 已經改成以 `release.zip` 為主的完整更新器：
+
+1. 先使用本機 `C:\ai_erp_itac\release.zip`，沒有的話才改下載遠端包。
+2. 驗證 zip 是否可讀。
+3. 解壓到暫存目錄。
+4. 將暫存內容部署回安裝根目錄，包含 `frontend\dist` 與 `nginx\html\ai`。
+5. 清掉舊的 `realtime` 編譯模組與快取。
+6. 寫入 `release\version.txt`。
+7. 最後啟動 `nginx` / `backend`，並自動開啟登入頁。
+
+也就是說，現在更新流程已經不是「手動傳 zip 但不會生效」，而是 `update.bat` 真的會把 zip 內容部署到 live 目錄。
+
 ## 建議的後續做法
 
 1. 每次修復後都先在 `D:\ai_erp_itac` 驗證。

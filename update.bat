@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title ITAC Client Update
+title ITAC Project Update
 color 0A
 
 if not defined ITAC_UPDATE_ROOT set "ITAC_UPDATE_ROOT=%~dp0"
@@ -12,7 +12,6 @@ set "LOCAL_PACKAGE=%ROOT%\release.zip"
 set "PACKAGE_URL=https://www.volx.com:2083/ai_erp/release.zip"
 set "DOWNLOADED_ZIP=%RELEASE_ROOT%\release.download.zip"
 set "LOG_FILE=%RELEASE_ROOT%\update.log"
-set "VERSION_FILE=%RELEASE_ROOT%\version.txt"
 set "RUNNING_COPY=%RELEASE_ROOT%\update.running.bat"
 
 if /I not "%~f0"=="%RUNNING_COPY%" (
@@ -24,7 +23,7 @@ if /I not "%~f0"=="%RUNNING_COPY%" (
 )
 
 echo ==================================
-echo ITAC Client Update
+echo ITAC Project Update
 echo ==================================
 echo.
 
@@ -39,8 +38,36 @@ if not exist "%ROOT%\nginx\logs" mkdir "%ROOT%\nginx\logs"
 
 if exist "%LOCAL_PACKAGE%" (
     echo [1/5] Using local release package...
-    copy /y "%LOCAL_PACKAGE%" "%DOWNLOADED_ZIP%" >nul
-    >> "%LOG_FILE%" echo local release package copied
+    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$src='%LOCAL_PACKAGE%'; $dst='%DOWNLOADED_ZIP%'; $tmp=$dst+'.partial'; $log='%LOG_FILE%'; $deadline=(Get-Date).AddSeconds(60);" ^
+        "Add-Type -AssemblyName System.IO.Compression.FileSystem;" ^
+        "$hashFile={ param($path) $sha=[System.Security.Cryptography.SHA256]::Create(); $stream=[System.IO.File]::OpenRead($path); try { return ([System.BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','') } finally { $stream.Dispose(); $sha.Dispose() } };" ^
+        "while ($true) {" ^
+        "  try {" ^
+        "    if (-not (Test-Path -LiteralPath $src)) { throw 'local release.zip not found' };" ^
+        "    $size1=(Get-Item -LiteralPath $src).Length; Start-Sleep -Seconds 2; $size2=(Get-Item -LiteralPath $src).Length;" ^
+        "    if ($size1 -le 0 -or $size1 -ne $size2) { throw ('source package is still being copied: ' + $size1 + ' -> ' + $size2) };" ^
+        "    $zip=[System.IO.Compression.ZipFile]::OpenRead($src); try { if ($zip.Entries.Count -le 0) { throw 'source package has no entries' } } finally { $zip.Dispose() };" ^
+        "    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; [System.IO.File]::Copy($src,$tmp,$true);" ^
+        "    $srcSize=(Get-Item -LiteralPath $src).Length; $tmpSize=(Get-Item -LiteralPath $tmp).Length;" ^
+        "    if ($srcSize -ne $tmpSize) { throw ('copy size mismatch: source=' + $srcSize + ' copied=' + $tmpSize) };" ^
+        "    $srcHash=(& $hashFile $src); $tmpHash=(& $hashFile $tmp);" ^
+        "    if ($srcHash -ne $tmpHash) { throw ('copy SHA256 mismatch: source=' + $srcHash + ' copied=' + $tmpHash) };" ^
+        "    Move-Item -LiteralPath $tmp -Destination $dst -Force;" ^
+        "    Add-Content -LiteralPath $log -Value ('local release package copied and verified size=' + $srcSize + ' sha256=' + $srcHash); exit 0;" ^
+        "  } catch {" ^
+        "    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue;" ^
+        "    if ((Get-Date) -ge $deadline) { Add-Content -LiteralPath $log -Value ('local release copy failed after retry: ' + $_.Exception.Message); exit 1 };" ^
+        "    Start-Sleep -Seconds 2;" ^
+        "  }" ^
+        "}"
+    if errorlevel 1 (
+        echo [ERROR] Local release.zip is incomplete or still being copied.
+        echo [ERROR] Wait for the copy to finish, then run update.bat again.
+        echo [ERROR] Please open log: "%LOG_FILE%"
+        pause
+        exit /b 1
+    )
 ) else (
     echo [1/5] Download release package...
     powershell -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -53,16 +80,6 @@ if exist "%LOCAL_PACKAGE%" (
     >> "%LOG_FILE%" echo release package downloaded
 )
 for %%I in ("%DOWNLOADED_ZIP%") do >> "%LOG_FILE%" echo zip path=%%~fI size=%%~zI
-for /f "usebackq delims=" %%H in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-FileHash -Algorithm SHA256 '%DOWNLOADED_ZIP%').Hash"`) do set "PACKAGE_HASH=%%H"
-for /f "usebackq delims=" %%H in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-FileHash -Algorithm SHA256 '%~f0').Hash"`) do set "UPDATE_BAT_HASH=%%H"
->> "%LOG_FILE%" echo package sha256=!PACKAGE_HASH!
->> "%LOG_FILE%" echo update.bat sha256=!UPDATE_BAT_HASH!
-> "%VERSION_FILE%" (
-    echo package_sha256=!PACKAGE_HASH!
-    echo update_bat_sha256=!UPDATE_BAT_HASH!
-    echo package_path=%DOWNLOADED_ZIP%
-    echo update_time=%DATE% %TIME%
-)
 
 echo [2/5] Verify release package...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -209,6 +226,7 @@ if errorlevel 8 (
 )
 >> "%LOG_FILE%" echo deployment copied
 
+echo.
 echo [4/5] Remove stale realtime compiled module...
 if exist "%ROOT%\backend\routes\realtime.cp310-win_amd64.pyd" (
     del /f /q "%ROOT%\backend\routes\realtime.cp310-win_amd64.pyd" >nul 2>&1
@@ -264,59 +282,34 @@ rmdir /s /q "%STAGING_DIR%" >nul 2>&1
 del /f /q "%DOWNLOADED_ZIP%" >nul 2>&1
 >> "%LOG_FILE%" echo staging cleaned
 
+set "VERSION_FILE=%RELEASE_ROOT%\version.txt"
+set "UPDATE_BAT_HASH="
+set "RELEASE_ZIP_HASH="
+for /f "usebackq delims=" %%H in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-FileHash -Algorithm SHA256 '%~f0').Hash"`) do set "UPDATE_BAT_HASH=%%H"
+if exist "%LOCAL_PACKAGE%" (
+    for /f "usebackq delims=" %%H in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-FileHash -Algorithm SHA256 '%LOCAL_PACKAGE%').Hash"`) do set "RELEASE_ZIP_HASH=%%H"
+)
+> "%VERSION_FILE%" (
+    echo update_bat_sha256=!UPDATE_BAT_HASH!
+    echo release_zip_sha256=!RELEASE_ZIP_HASH!
+    echo update_time=%DATE% %TIME%
+)
+echo [VERSION] update.bat sha256=!UPDATE_BAT_HASH!
+if defined RELEASE_ZIP_HASH echo [VERSION] release.zip sha256=!RELEASE_ZIP_HASH!
+
 echo.
-echo [5/5] Restart services...
-taskkill /f /im nginx.exe /t >nul 2>&1
-taskkill /f /im chrome.exe /t >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8080" ^| findstr "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":81" ^| findstr "LISTENING"') do taskkill /f /pid %%a >nul 2>&1
-
-echo [0/5] Clearing Chrome cache...
-for /d %%D in ("%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache" "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Code Cache" "%LOCALAPPDATA%\Google\Chrome\User Data\Default\GPUCache" "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Service Worker\CacheStorage" "%LOCALAPPDATA%\Google\Chrome\User Data\Default\Service Worker\ScriptCache") do (
-    if exist "%%~D" rmdir /s /q "%%~D" >nul 2>&1
+echo [5/5] Hand off to startup.bat...
+if not exist "%ROOT%\startup.bat" (
+    echo [ERROR] startup.bat not found: "%ROOT%\startup.bat"
+    pause
+    exit /b 1
 )
-for /d %%D in ("%LOCALAPPDATA%\Google\Chrome\User Data\Default\Network\Cache") do (
-    if exist "%%~D" rmdir /s /q "%%~D" >nul 2>&1
-)
-
-if not exist "%ROOT%\logs" mkdir "%ROOT%\logs"
-
-echo [1/2] Starting nginx...
-"%ROOT%\nginx\nginx.exe" -t -p "%ROOT%\nginx" -c "conf\nginx.conf"
+call "%ROOT%\startup.bat"
 if errorlevel 1 (
-    echo [ERROR] nginx configuration test failed.
+    echo [ERROR] startup.bat failed.
     pause
     exit /b 1
 )
-start "" /b "%ROOT%\nginx\nginx.exe" -p "%ROOT%\nginx" -c "conf\nginx.conf" >"%ROOT%\logs\nginx.update.log" 2>&1
-
-echo [2/2] Starting backend...
-start "" /b "%ROOT%\backend\start_backend.bat"
-if errorlevel 1 (
-    echo [ERROR] Backend start failed.
-    pause
-    exit /b 1
-)
-
-echo [WAIT] Waiting for backend port 8080...
-set /a BACKEND_WAIT=0
-:WAIT_BACKEND2
-netstat -ano | findstr ":8080" | findstr "LISTENING" >nul
-if %errorlevel% equ 0 goto BACKEND_READY2
-set /a BACKEND_WAIT+=1
-if !BACKEND_WAIT! geq 30 (
-    echo [ERROR] Backend did not start within 30 seconds.
-    echo [ERROR] Check the backend window or backend log for the actual error.
-    >> "%LOG_FILE%" echo backend did not start within 30 seconds
-    pause
-    exit /b 1
-)
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 1" >nul 2>&1
-goto WAIT_BACKEND2
-
-:BACKEND_READY2
-echo [OK] Backend port 8080 is ready.
->> "%LOG_FILE%" echo backend ready
 
 echo.
 echo [OK] Update complete.

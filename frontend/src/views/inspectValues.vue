@@ -886,6 +886,26 @@ function parseMeasurementNumber(value) {
     .replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
     .replace(/[\s,]*(?:mm|㎜|cm|㎝|m|μm|um|nm|inch|in|%|℃|°|度)\s*$/ig, '')
     .trim()
+  const token = extractStandardValueToken(stripped)
+  if (token && token !== stripped) {
+    const tokenMixedFraction = token.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
+    if (tokenMixedFraction) {
+      const whole = Number(tokenMixedFraction[1] || 0)
+      const numerator = Number(tokenMixedFraction[2] || 0)
+      const denominator = Number(tokenMixedFraction[3] || 0)
+      const sign = whole < 0 ? -1 : 1
+      if (denominator) return sign * (Math.abs(whole) + numerator / denominator)
+    }
+    const tokenSimpleFraction = token.match(/^(-?)(\d+)\/(\d+)$/)
+    if (tokenSimpleFraction) {
+      const sign = tokenSimpleFraction[1] === '-' ? -1 : 1
+      const numerator = Number(tokenSimpleFraction[2] || 0)
+      const denominator = Number(tokenSimpleFraction[3] || 0)
+      if (denominator) return sign * (numerator / denominator)
+    }
+    const tokenNumber = Number(token)
+    if (Number.isFinite(tokenNumber)) return tokenNumber
+  }
   const mixedFraction = stripped.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
   if (mixedFraction) {
     const whole = Number(mixedFraction[1] || 0)
@@ -1204,9 +1224,9 @@ function parseMaxMinValue(raw) {
 
 function parseStandardValue(raw) {
   const text = String(raw || '').trim()
-  if (!text) return { minValue: '', maxValue: '', unit: '°' }
+  if (!text) return { minValue: '', maxValue: '', unit: '' }
   const unitMatch = text.match(/(Go\/NoGo|OK\/NG|REF|inch|mm|°)/i)
-  const unit = unitMatch ? unitMatch[1] : '°'
+  const unit = unitMatch ? unitMatch[1] : ''
   if (isAngleUnit(unit)) {
     const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
     const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
@@ -1224,7 +1244,18 @@ function parseStandardValue(raw) {
     }
   }
   const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
-  const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
+  const slashAsRange = body.includes('/')
+    && (
+      /\b(MIN|MAX)\b/i.test(text)
+      || /\d+\.\d+\s*\/\s*\d+\.\d+/.test(body)
+      || /\d+\.\d+\s*\/\s*\d+/.test(body)
+      || /\d+\s*\/\s*\d+\.\d+/.test(body)
+    )
+  const parts = body
+    .split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/)
+    .flatMap(chunk => (slashAsRange ? chunk.split('/') : [chunk]))
+    .map(x => x.trim())
+    .filter(Boolean)
   const values = parts.length ? parts : [body]
   const tokens = values.map(v => extractStandardValueToken(v)).filter(Boolean)
   return {

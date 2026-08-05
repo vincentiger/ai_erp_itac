@@ -738,9 +738,9 @@ function handleStandardMinInput(item) {
 
 function parseStandardValue(raw) {
   const text = String(raw || '').trim()
-  if (!text) return { minValue: '', maxValue: '', unit: '°' }
+  if (!text) return { minValue: '', maxValue: '', unit: '' }
   const unitMatch = text.match(/(Go\/NoGo|OK\/NG|REF|inch|mm|°)/i)
-  const unit = unitMatch ? unitMatch[1] : '°'
+  const unit = unitMatch ? unitMatch[1] : ''
   if (isAngleUnit(unit)) {
     const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
     const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
@@ -750,7 +750,18 @@ function parseStandardValue(raw) {
     return { minValue: angleParts[0] || '', maxValue: angleParts[1] || '', unit }
   }
   const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
-  const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
+  const slashAsRange = body.includes('/')
+    && (
+      /\b(MIN|MAX)\b/i.test(text)
+      || /\d+\.\d+\s*\/\s*\d+\.\d+/.test(body)
+      || /\d+\.\d+\s*\/\s*\d+/.test(body)
+      || /\d+\s*\/\s*\d+\.\d+/.test(body)
+    )
+  const parts = body
+    .split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/)
+    .flatMap(chunk => (slashAsRange ? chunk.split('/') : [chunk]))
+    .map(x => x.trim())
+    .filter(Boolean)
   const values = parts.length ? parts : [body]
   const tokens = values.map(value => {
     const cleaned = String(value || '').trim().replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')

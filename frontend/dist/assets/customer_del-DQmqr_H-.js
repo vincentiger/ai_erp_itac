@@ -1,1 +1,0 @@
-import e from"./customer_view-CxZqmGM4.js";import{f as o,k as r}from"./index-BD_bn524.js";import"./apiFetch-De8-ivig.js";const p={__name:"customer_del",setup(t){return(m,c)=>(r(),o(e,{mode:"delete"}))}};export{p as default};

@@ -749,8 +749,19 @@ function parseStandardValue(raw) {
     if (/\bMIN\b/i.test(text)) return { minValue: angleParts[0] || '', maxValue: '', unit }
     return { minValue: angleParts[0] || '', maxValue: angleParts[1] || '', unit }
   }
-  const nums = text.match(/-?\d+(?:\.\d+)?/g) || []
-  return { minValue: nums[0] || '', maxValue: nums[1] || '', unit }
+  const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
+  const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
+  const values = parts.length ? parts : [body]
+  const tokens = values.map(value => {
+    const cleaned = String(value || '').trim().replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
+    const mixedFraction = cleaned.match(/-?\d+\s+\d+\/\d+/)
+    if (mixedFraction) return mixedFraction[0].replace(/\s+/g, ' ').trim()
+    const simpleFraction = cleaned.match(/-?\d+\/\d+/)
+    if (simpleFraction) return simpleFraction[0].replace(/\s+/g, '')
+    const decimal = cleaned.match(/-?\d+(?:\.\d+)?/)
+    return decimal ? decimal[0] : ''
+  }).filter(Boolean)
+  return { minValue: tokens[0] || '', maxValue: tokens[1] || '', unit }
 }
 
 function parseMaxMinValue(raw) {

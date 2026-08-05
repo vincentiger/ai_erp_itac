@@ -73,6 +73,13 @@
 5. 確認登入後不會再出現型別造成的 `.strip()` 錯誤。
 6. 確認被修正的頁面或 API，在 `D:`、`C:` 與 `release.zip` 三邊內容一致。
 
+## 這次補上的標準值規則
+
+- `inspectValues.vue` 與 `inspectStandard.vue` 都已補強英吋分數格式解析。
+- 現在像 `1/8`、`1 1/2` 這類標準值，不會再被當成格式錯誤。
+- `update.bat` 的實際更新流程是先讀取 `C:\ai_erp_itac\release.zip`，再在結尾接著執行 `startup.bat`。
+- 因此只要有改到前端解析或判定流程，就一定要同步更新 `C:\ai_erp_itac\release.zip`，並依現場需要複製一份到 `C:\ai_erp_itac\release\release.zip` 方便比對。
+
 ## 建議的後續做法
 
 1. 每次修復後都先在 `D:\ai_erp_itac` 驗證。

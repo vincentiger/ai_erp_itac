@@ -882,13 +882,40 @@ function parseMeasurementNumber(value) {
     const sign = deg < 0 ? -1 : 1
     return sign * (Math.abs(deg) + min / 60 + sec / 3600)
   }
-  const cleaned = text
+  const stripped = text
     .replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
     .replace(/[\s,]*(?:mm|㎜|cm|㎝|m|μm|um|nm|inch|in|%|℃|°|度)\s*$/ig, '')
-    .replace(/\s+/g, '')
     .trim()
+  const mixedFraction = stripped.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
+  if (mixedFraction) {
+    const whole = Number(mixedFraction[1] || 0)
+    const numerator = Number(mixedFraction[2] || 0)
+    const denominator = Number(mixedFraction[3] || 0)
+    const sign = whole < 0 ? -1 : 1
+    if (denominator) return sign * (Math.abs(whole) + numerator / denominator)
+  }
+  const cleaned = stripped.replace(/\s+/g, '')
+  const simpleFraction = cleaned.match(/^(-?)(\d+)\/(\d+)$/)
+  if (simpleFraction) {
+    const sign = simpleFraction[1] === '-' ? -1 : 1
+    const numerator = Number(simpleFraction[2] || 0)
+    const denominator = Number(simpleFraction[3] || 0)
+    if (denominator) return sign * (numerator / denominator)
+  }
   const num = Number(cleaned)
   return Number.isFinite(num) ? num : null
+}
+
+function extractStandardValueToken(raw) {
+  const text = String(raw ?? '').trim()
+  if (!text) return ''
+  const cleaned = text.replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
+  const mixedFraction = cleaned.match(/-?\d+\s+\d+\/\d+/)
+  if (mixedFraction) return mixedFraction[0].replace(/\s+/g, ' ').trim()
+  const simpleFraction = cleaned.match(/-?\d+\/\d+/)
+  if (simpleFraction) return simpleFraction[0].replace(/\s+/g, '')
+  const decimal = cleaned.match(/-?\d+(?:\.\d+)?/)
+  return decimal ? decimal[0] : ''
 }
 
 function isAngleUnit(unit) {
@@ -1196,10 +1223,13 @@ function parseStandardValue(raw) {
       unit
     }
   }
-  const nums = text.match(/-?\d+(?:\.\d+)?/g) || []
+  const body = text.replace(/\b(MIN|MAX)\b/gi, '').trim()
+  const parts = body.split(/\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至)/).map(x => x.trim()).filter(Boolean)
+  const values = parts.length ? parts : [body]
+  const tokens = values.map(v => extractStandardValueToken(v)).filter(Boolean)
   return {
-    minValue: nums[0] || '',
-    maxValue: nums[1] || '',
+    minValue: tokens[0] || '',
+    maxValue: tokens[1] || '',
     unit
   }
 }

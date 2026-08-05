@@ -10,6 +10,9 @@
     <header class="lab-header">
       <div class="lab-shell">
         <div class="lab-toolbar">
+          <div class="mb-2">
+            <el-button v-if="returnToPage" plain @click="goBackPage">回上一頁</el-button>
+          </div>
           <div class="lab-toolbar-actions">
             <el-button plain @click="openSourceDialog">選擇委託單</el-button>
             <el-button v-if="isStandardMode" type="primary" plain @click="openTemplatePicker">
@@ -1688,6 +1691,7 @@ const {
 } = useLabMech()
 const route = useRoute()
 const router = useRouter()
+const returnToPage = computed(() => String(route.query.from || '').trim())
 
 const showGuide = ref(false)
 const showDuplicate = ref(false)
@@ -2451,6 +2455,15 @@ function openSourceDialog() {
   if (!sourceState.results.length) {
     searchSourceForms()
   }
+}
+
+function goBackPage() {
+  const target = String(returnToPage.value || '').trim()
+  if (target) {
+    router.push({ name: target }).catch(() => {})
+    return
+  }
+  router.back()
 }
 
 function resetPendingImages() {

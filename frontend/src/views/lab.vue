@@ -4,19 +4,24 @@
 
       <div class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">
         <div class="py-3 space-y-2">
-          <div class="flex items-center justify-end gap-2 flex-wrap">
-            <el-button plain @click="openManualPdf('測試委託單.pdf')">
-              使用說明
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <el-button v-if="returnToPage" plain @click="goBackPage">
+              回上一頁
             </el-button>
-            <el-button type="primary" plain @click="newLabForm">
-              新增委託測試單
-            </el-button>
-            <el-button plain @click="openLabImport">
-              匯入委託單
-            </el-button>
-            <el-button :loading="state.exporting" @click="exportDocxReal">
-              匯出word/列印
-            </el-button>
+            <div class="flex items-center justify-end gap-2 flex-wrap ml-auto">
+              <el-button plain @click="openManualPdf('測試委託單.pdf')">
+                使用說明
+              </el-button>
+              <el-button type="primary" plain @click="newLabForm">
+                新增委託測試單
+              </el-button>
+              <el-button plain @click="openLabImport">
+                匯入委託單
+              </el-button>
+              <el-button :loading="state.exporting" @click="exportDocxReal">
+                匯出word/列印
+              </el-button>
+            </div>
           </div>
           <div v-if="state.formId" class="lab-secondary-actions">
             <el-button plain @click="openInspectStandard">
@@ -650,36 +655,41 @@
 
       <div class="mt-3">
         <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/90 backdrop-blur">
-          <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 space-y-3">
             <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-wrap">
               <div class="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm">
                 目前狀態
               </div>
               <el-select
                 v-model="form.status_code"
-                class="w-full sm:w-80"
+                class="status-select w-full sm:w-80"
+                popper-class="lab-status-popper"
                 @change="onStatusChange"
               >
                 <el-option
                   v-for="option in statusSelectOptions"
                   :key="option.code"
-                  :label="`${option.code}).${option.label}`"
+                  :label="`${option.code}). ${option.label}`"
                   :value="option.code"
-                />
+                >
+                  <span class="font-semibold">{{ `${option.code}). ${option.label}` }}</span>
+                </el-option>
               </el-select>
             </div>
-            <el-button
-              v-if="state.formId"
-              type="danger"
-              plain
-              :loading="state.deleting"
-              @click="deleteCurrentForm"
-            >
-              刪除
-            </el-button>
-            <el-button type="primary" :loading="state.saving" @click="saveDraftReal">
-              儲存
-            </el-button>
+            <div class="border-t border-slate-200 pt-3 flex justify-end gap-2">
+              <el-button
+                v-if="state.formId"
+                type="danger"
+                plain
+                :loading="state.deleting"
+                @click="deleteCurrentForm"
+              >
+                刪除
+              </el-button>
+              <el-button type="primary" :loading="state.saving" @click="saveDraftReal">
+                儲存
+              </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -793,6 +803,7 @@ const quoteCurrencyOptions = [
   { label: 'JPY', value: 'JPY' },
 ]
 const showQuotationFields = computed(() => String(route.query.from || '').trim() === 'lab_quote_manage')
+const returnToPage = computed(() => String(route.query.from || '').trim())
 const currentUser = computed(() => {
   try {
     return JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}')
@@ -1184,6 +1195,15 @@ function openManualPdf(fileName) {
   if (!fileName) return
   const target = `${import.meta.env.BASE_URL}manuals/${encodeURIComponent(String(fileName))}`
   window.open(target, '_blank', 'noopener')
+}
+
+function goBackPage() {
+  const target = String(returnToPage.value || '').trim()
+  if (target) {
+    router.push({ name: target }).catch(() => {})
+    return
+  }
+  router.back()
 }
 
 function assignFormValues(values = {}) {
@@ -2347,7 +2367,7 @@ async function openInspectValues() {
     await ensureSourceReady()
     router.push({
       name: 'lab_qet',
-      query: { source_form_id: state.formId }
+      query: { source_form_id: state.formId, from: 'lab' }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟尺寸原始記錄表')
@@ -2359,7 +2379,7 @@ async function openInspectStandard() {
     await ensureSourceReady()
     router.push({
       name: 'lab_qet_standard',
-      query: { source_form_id: state.formId }
+      query: { source_form_id: state.formId, from: 'lab' }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟設定尺寸原始記錄表')
@@ -2371,7 +2391,7 @@ async function openLabMech() {
     await ensureSourceReady()
     router.push({
       name: 'lab_mech',
-      query: { source_form_id: state.formId }
+      query: { source_form_id: state.formId, from: 'lab' }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟機械性質試驗表')
@@ -2383,7 +2403,7 @@ async function openLabMechStandard() {
     await ensureSourceReady()
     router.push({
       name: 'lab_mech_standard',
-      query: { source_form_id: state.formId }
+      query: { source_form_id: state.formId, from: 'lab' }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟設定機械性質檢驗記錄表')
@@ -2457,6 +2477,40 @@ watch(
   background: #e5e7eb;
   border-color: #cbd5e1;
   color: #111827;
+}
+
+.status-select {
+  min-width: 18rem;
+}
+
+.status-select :deep(.el-select__selected-item),
+.status-select :deep(.el-input__inner) {
+  font-weight: 700;
+}
+
+.status-select :deep(.el-select__wrapper),
+.status-select :deep(.el-input__wrapper) {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.status-select :deep(.el-select__wrapper:hover),
+.status-select :deep(.el-input__wrapper:hover) {
+  border-color: #fb923c;
+}
+
+.status-select :deep(.el-select__wrapper.is-focus),
+.status-select :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.25) !important;
+  border-color: #f97316;
+}
+
+:global(.lab-status-popper .el-select-dropdown__item) {
+  font-weight: 700;
+}
+
+:global(.lab-status-popper .el-select-dropdown__item.is-selected) {
+  color: #c2410c;
 }
 
 :global(.el-input__wrapper),

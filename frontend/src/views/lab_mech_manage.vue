@@ -129,7 +129,7 @@ function openForm(row) {
   }
   router.push({
     name: isStandardMode.value ? 'lab_mech_standard' : 'lab_mech',
-    query: { report_id: reportId },
+    query: { report_id: reportId, from: 'lab_mech_manage' },
   })
 }
 

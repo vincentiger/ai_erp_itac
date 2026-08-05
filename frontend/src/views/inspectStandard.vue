@@ -7,6 +7,7 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
+        <el-button v-if="returnToPage" plain @click="goBackPage">回上一頁</el-button>
         <el-button @click="openSourceDialog" plain>選擇委託單</el-button>
         <el-button plain @click="router.push({ name: 'lab_qet_manage' })">查修</el-button>
         <el-button @click="newForm" plain>新增設定</el-button>
@@ -401,6 +402,7 @@ const qetApi = (p) => {
 }
 const route = useRoute()
 const router = useRouter()
+const returnToPage = computed(() => String(route.query.from || '').trim())
 
 const todayStr = () => {
   const d = new Date()
@@ -1062,6 +1064,15 @@ async function searchSourceForms() {
 function openSourceDialog() {
   sourceState.dialogVisible = true
   searchSourceForms()
+}
+
+function goBackPage() {
+  const target = String(returnToPage.value || '').trim()
+  if (target) {
+    router.push({ name: target }).catch(() => {})
+    return
+  }
+  router.back()
 }
 
 function newForm(force = false) {

@@ -141,7 +141,7 @@ function reloadFromFirstPage() {
 }
 
 function openForm(row) {
-  router.push({ name: 'lab_qet', query: { form_id: row.form_id } })
+  router.push({ name: 'lab_qet', query: { form_id: row.form_id, from: 'lab_qet_manage' } })
 }
 
 async function resolveSourceFormId(row) {
@@ -164,7 +164,7 @@ async function openMech(row) {
       ElMessage.warning('找不到來源委託單，無法帶入機械性質表')
       return
     }
-    router.push({ name: 'lab_mech', query: { source_form_id: sourceFormId } })
+    router.push({ name: 'lab_mech', query: { source_form_id: sourceFormId, from: 'lab_qet_manage' } })
   } catch (e) {
     ElMessage.error(String(e?.message || e || '無法開啟機械性質表'))
   } finally {

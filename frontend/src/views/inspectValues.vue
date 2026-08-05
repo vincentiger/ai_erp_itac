@@ -7,6 +7,7 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
+        <el-button v-if="returnToPage" plain @click="goBackPage">回上一頁</el-button>
         <el-button plain @click="openManualPdf('尺寸原始記錄表.pdf')">使用說明</el-button>
         <el-button @click="openSourceDialog" plain>選擇委託單</el-button>
         <el-button plain @click="router.push({ name: 'lab_qet_manage' })">查修</el-button>
@@ -582,11 +583,21 @@ const qetApi = (p) => {
 }
 const route = useRoute()
 const router = useRouter()
+const returnToPage = computed(() => String(route.query.from || '').trim())
 
 function openManualPdf(fileName) {
   if (!fileName) return
   const target = `${import.meta.env.BASE_URL}manuals/${encodeURIComponent(String(fileName))}`
   window.open(target, '_blank', 'noopener')
+}
+
+function goBackPage() {
+  const target = String(returnToPage.value || '').trim()
+  if (target) {
+    router.push({ name: target }).catch(() => {})
+    return
+  }
+  router.back()
 }
 
 const todayStr = () => {

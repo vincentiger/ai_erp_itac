@@ -284,7 +284,7 @@ function openForm(row) {
   if (!formId) return
   router.push({
     name: 'lab',
-    query: { form_id: formId },
+    query: { form_id: formId, from: 'lab_view' },
   })
 }
 
@@ -293,7 +293,7 @@ function openQet(row) {
   if (!formId) return
   router.push({
     name: 'lab_qet',
-    query: { source_form_id: formId },
+    query: { source_form_id: formId, from: 'lab_view' },
   })
 }
 
@@ -302,7 +302,7 @@ function openMech(row) {
   if (!formId) return
   router.push({
     name: 'lab_mech',
-    query: { source_form_id: formId },
+    query: { source_form_id: formId, from: 'lab_view' },
   })
 }
 
@@ -311,7 +311,7 @@ function copyForm(row) {
   if (!formId) return
   router.push({
     name: 'lab',
-    query: { copy_from: formId },
+    query: { copy_from: formId, from: 'lab_view' },
   })
 }
 

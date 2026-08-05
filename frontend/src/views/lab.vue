@@ -1621,12 +1621,11 @@ function openLabQuoteManage() {
 }
 
 function isLabFormReleased() {
-  const approval = form.approval || {}
+  const statusCode = normalizeStatusCode(form.status_code)
   return Boolean(
-    approval.customer_signature_checked &&
-    approval.customer_signature_date &&
-    approval.manager_approval_checked &&
-    approval.manager_approval_date
+    String(state.formId || '').trim() &&
+    String(form.lab_no || '').trim() &&
+    statusCode !== '1'
   )
 }
 
@@ -2347,7 +2346,7 @@ async function ensureSourceReady() {
     }
   }
   if (!isLabFormReleased()) {
-    throw new Error('委託方簽名與主管審核都需勾選並填日期，委託單成立後才能開啟尺寸/機械性質表')
+    throw new Error('請先將委託單狀態切換為正式成立後，再開啟尺寸/機械性質表')
   }
 }
 

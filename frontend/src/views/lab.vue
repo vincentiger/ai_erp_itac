@@ -619,8 +619,37 @@
               </div>
             </el-card>
 
+            <el-card v-if="isSupervisorUser" shadow="never">
+              <template #header><div class="font-semibold">8) 目前狀態</div></template>
+              <div class="grid grid-cols-1 gap-3">
+                <div class="border rounded-xl p-3">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <div class="font-semibold">狀態</div>
+                      <div class="text-xs text-gray-500 mt-1">切換後儲存，系統會依狀態產生不同編號。</div>
+                    </div>
+                    <el-select v-model="form.status_code" class="w-full sm:w-80" @change="onStatusChange">
+                      <el-option
+                        v-for="option in statusSelectOptions"
+                        :key="option.code"
+                        :label="`${option.code}).${option.label}`"
+                        :value="option.code"
+                      />
+                    </el-select>
+                  </div>
+                </div>
+                <div class="border rounded-xl p-3">
+                  <div class="text-xs text-gray-500">委託單編號</div>
+                  <div class="font-mono text-base mt-1">{{ form.lab_no || '-' }}</div>
+                  <div v-if="form.status_code === '4' && form.report_no" class="text-xs text-gray-500 mt-1">
+                    報告號碼：{{ form.report_no }}
+                  </div>
+                </div>
+              </div>
+            </el-card>
+
             <el-card v-if="showQuotationFields" shadow="never">
-              <template #header><div class="font-semibold">8) 報價資訊</div></template>
+              <template #header><div class="font-semibold">9) 報價資訊</div></template>
               <el-form :model="form" label-position="top" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <el-form-item label="幣別">
                   <el-select v-model="form.quote_currency" placeholder="請選擇幣別" class="w-full">
@@ -795,6 +824,14 @@ const isSupervisorUser = computed(() => {
   ].map(v => String(v || '')).join(' ')
   return authority === 12 || text.includes('主管')
 })
+const statusOptions = [
+  { code: '1', label: '臨時' },
+  { code: '2', label: '收到樣品，有logo' },
+  { code: '3', label: '收到樣品，無logo' },
+  { code: '4', label: '主管審核完成' },
+]
+const statusOptionMap = Object.fromEntries(statusOptions.map(item => [item.code, item]))
+const statusSelectOptions = computed(() => (isSupervisorUser.value ? statusOptions : statusOptions.slice(0, 1)))
 const drawingAttachmentInput = ref(null)
 const customerSignatureInput = ref(null)
 const managerSignatureInput = ref(null)
@@ -812,6 +849,8 @@ const state = reactive({
   templateDocx: 'LQP-08-01.docx',
   templateId: localStorage.getItem('lab_template_id') || '',
   formId: '',
+  persistedStatusCode: '1',
+  lastStatusCode: '1',
   selectedCustomerRefno: '',
   customers: [],
   materialOptions: [],
@@ -940,10 +979,109 @@ function parseCommaNumber(value) {
   return Number.isFinite(num) ? num : 0
 }
 
+function normalizeStatusCode(value) {
+  const code = String(value || '1').trim()
+  return statusOptionMap[code] ? code : '1'
+}
+
+function normalizeHasLogo(value) {
+  const text = String(value ?? '').trim()
+  if (text === '有logo' || text === '有') return '有logo'
+  if (text === '無logo' || text === '無') return '無logo'
+  return ''
+}
+
+function compactDate(dateValue = todayStr) {
+  return String(dateValue || todayStr).replace(/-/g, '')
+}
+
+function compactMonth(dateValue = todayStr) {
+  return String(dateValue || todayStr).slice(0, 7).replace(/-/g, '')
+}
+
+function nextStatusSeq(key, dateValue = todayStr) {
+  const month = compactMonth(dateValue)
+  const storageKey = `lab_status_monthly_seq:${month}:${String(key || '').trim()}`
+  const next = Number(localStorage.getItem(storageKey) || '0') + 1
+  localStorage.setItem(storageKey, String(next))
+  return String(next).padStart(3, '0')
+}
+
+function buildTempLabNo(dateValue = todayStr) {
+  return `T${compactDate(dateValue)}-${nextStatusSeq(`temp:${compactDate(dateValue)}`, dateValue)}`
+}
+
+function buildFormalLabNo(statusCode, dateValue = todayStr) {
+  const code = normalizeStatusCode(statusCode)
+  const date = compactDate(dateValue)
+  const month = compactMonth(dateValue)
+  if (code === '3') {
+    return `A${date}-${nextStatusSeq(`formal:${month}:nologo`, dateValue)}`
+  }
+  return `${date}-${nextStatusSeq(`formal:${month}:logo`, dateValue)}`
+}
+
+function buildReportNo(hasLogo, dateValue = todayStr) {
+  const logo = normalizeHasLogo(hasLogo)
+  const date = compactDate(dateValue)
+  const month = compactMonth(dateValue)
+  return logo === '無logo'
+    ? `R${date}-${nextStatusSeq(`report:${month}:nologo`, dateValue)}`
+    : `${month}-${nextStatusSeq(`report:${month}:logo`, dateValue)}`
+}
+
+function syncStatusGeneratedNumbers(force = false) {
+  const statusCode = normalizeStatusCode(form.status_code)
+  const baseDate = String(form.filled_date || todayStr)
+  const hasLogo = normalizeHasLogo(form.has_logo)
+  form.status_seq = statusCode
+
+  if (!force && state.formId && statusCode === state.persistedStatusCode && String(form.lab_no || '').trim()) {
+    return
+  }
+
+  if (statusCode === '1') {
+    form.lab_no = buildTempLabNo(baseDate)
+    form.report_no = ''
+    return
+  }
+
+  if (statusCode === '2' || statusCode === '3') {
+    form.lab_no = buildFormalLabNo(statusCode, baseDate)
+    form.report_no = ''
+    return
+  }
+
+  if (!String(form.lab_no || '').trim()) {
+    form.lab_no = buildFormalLabNo(hasLogo === '無logo' ? '3' : '2', baseDate)
+  }
+  form.report_no = buildReportNo(hasLogo, baseDate)
+}
+
+function onStatusChange(value) {
+  const next = normalizeStatusCode(value)
+  if (state.lastStatusCode !== '1' && next === '1') {
+    form.status_code = state.lastStatusCode
+    ElMessage.warning('已成立的委託單不可退回臨時狀態')
+    return
+  }
+  form.status_code = next
+  state.lastStatusCode = next
+  if (next === '2') form.has_logo = '有logo'
+  if (next === '3') form.has_logo = '無logo'
+  if (next === '1') form.has_logo = ''
+  syncStatusGeneratedNumbers()
+  ElMessage.warning('儲存後，委託單編號即依新狀態自動產生')
+}
+
 function createBlankLabForm() {
   return {
   filled_date: todayStr,
   lab_no: '',
+  report_no: '',
+  status_code: '1',
+  status_seq: '',
+  has_logo: '',
 
   customer_id: null,
   customer_refno: '',
@@ -1112,6 +1250,10 @@ function assignFormValues(values = {}) {
   Object.assign(form, {
     ...form,
     ...values,
+    status_code: normalizeStatusCode(values.status_code || values.status || form.status_code || '1'),
+    status_seq: String(values.status_seq || values.status_code || values.status || form.status_seq || '1'),
+    has_logo: normalizeHasLogo(values.has_logo || form.has_logo || ''),
+    report_no: String(values.report_no || form.report_no || ''),
     tests: normalizeTestBucket(values.tests || form.tests),
     test_method_map: normalizeTestMethodMap(values.test_method_map || form.test_method_map),
     production_unit: values.production_unit || 'PCS',
@@ -1151,12 +1293,16 @@ function assignFormValues(values = {}) {
   form.tests.functional = (Array.isArray(form.tests.functional) ? form.tests.functional : [])
     .filter(x => String(x || '').trim() !== '功能測試')
   syncCurrentSharedOptionValues()
+  state.persistedStatusCode = normalizeStatusCode(form.status_code)
+  state.lastStatusCode = state.persistedStatusCode
 }
 
 async function resetFormForNew() {
   Object.assign(form, createBlankLabForm())
   state.selectedCustomerRefno = ''
   state.formId = ''
+  state.persistedStatusCode = '1'
+  state.lastStatusCode = '1'
   attachmentState.files = []
   localStorage.removeItem('lab_form_id')
   syncAllTestMethods()
@@ -1192,6 +1338,8 @@ async function importLabFormFrom(sourceFormId) {
     Object.assign(form, createBlankLabForm())
     state.selectedCustomerRefno = ''
     state.formId = ''
+    state.persistedStatusCode = '1'
+    state.lastStatusCode = '1'
     attachmentState.files = []
     localStorage.removeItem('lab_form_id')
     assignFormValues(sourceValues)
@@ -1298,6 +1446,8 @@ async function loadSavedForm() {
     }
 
     assignFormValues(json.form.values || {})
+    state.persistedStatusCode = normalizeStatusCode(form.status_code)
+    state.lastStatusCode = state.persistedStatusCode
     await syncSelectedCustomerFromForm()
     await loadDrawingAttachments()
   } catch (e) {
@@ -1450,19 +1600,9 @@ async function syncFormIdFromRoute() {
 }
 
 async function refreshLabNoPreview() {
-  if (state.formId) return
   try {
-    const filledDate = String(form.filled_date || todayStr)
-    const qs = new URLSearchParams({
-      filled_date: filledDate,
-    }).toString()
-    const resp = await fetch(api(`lab/next-lab-no?${qs}`), {
-      credentials: 'include',
-    })
-    const json = await resp.json()
-    if (json.ok && json.lab_no) {
-      form.lab_no = json.lab_no
-    }
+    if (state.formId) return
+    syncStatusGeneratedNumbers(true)
   } catch (e) {
     console.error(e)
   }
@@ -1602,6 +1742,9 @@ async function saveDraftReal(options = {}) {
   state.saving = true
 
   try {
+    if (!state.formId || !String(form.lab_no || '').trim()) {
+      syncStatusGeneratedNumbers(true)
+    }
     form.salt_spray_hours = form.salt_spray_spec.white_hours || form.salt_spray_spec.red_hours || ''
     form.salt_spray_type = form.salt_spray_spec.white_hours && form.salt_spray_spec.red_hours
       ? '白鏽、紅鏽'
@@ -1657,6 +1800,8 @@ async function saveDraftReal(options = {}) {
     if (json.lab_no) {
       form.lab_no = json.lab_no
     }
+    state.persistedStatusCode = normalizeStatusCode(form.status_code)
+    state.lastStatusCode = state.persistedStatusCode
 
     ElMessage.success(isUpdate ? '更新成功' : '儲存成功')
     return true

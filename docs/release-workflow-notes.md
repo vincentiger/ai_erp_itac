@@ -42,6 +42,25 @@
 - 客戶主機不是直接拿 `D:` 的原始碼，而是吃 `release.zip` 更新。
 - 所以只要要出給客戶，最後一定要確認 `C:\ai_erp_itac\release.zip` 是最新版本。
 
+## 客戶主機上的另一套更新器
+
+有些客戶環境不是直接跑 `C:\ai_erp_itac\update.bat`，而是透過 `C:\inetpub\wwwroot\xCPC\update\` 底下的更新器接收檔案。
+
+如果 log 長得像這樣：
+
+- `收到檔案：C:\inetpub\wwwroot\xCPC\update\inbox\update.zip`
+- `開始解壓到：C:\inetpub\wwwroot\xCPC\update\work`
+- `略過：...\SmartUpdate.bat`
+- `略過：...\SmartUpdate.ps1`
+
+那代表實際在跑的是 xCPC 的 web 更新流程，不是本機的 `release.zip -> update.bat -> startup.bat` 流程。
+
+這種情況要注意：
+
+1. 客戶端真正吃到的是 `update.zip`，不是本機的 `release.zip`。
+2. 就算 `release.zip` 已更新，如果沒有同步到客戶主機的 `update.zip` 上傳入口，UI 也不會變。
+3. `SmartUpdate.bat` / `SmartUpdate.ps1` 被略過，表示這套更新器本身可能只做複製與 SQL，不會額外幫你重啟瀏覽器或開登入頁。
+
 ## 這次登入錯誤的修正方式
 
 本次處理的是登入階段的字串型別問題：

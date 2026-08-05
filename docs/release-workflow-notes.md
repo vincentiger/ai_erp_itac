@@ -27,12 +27,13 @@
 1. 在 `D:\ai_erp_itac` 修改原始碼。
 2. 確認修正內容已涵蓋登入、後端 API、Socket 或前端相關檔案。
 3. 依照既有流程把原始碼轉譯或同步到 `C:\ai_erp_itac`。
-4. 在 `C:\ai_erp_itac` 產出前端/部署內容，讓 `release.zip` 內容和最新修改一致。
-5. 以 `C:\ai_erp_itac` 的輸出內容建立 `release.zip`。
-6. 若需要驗證，先比對 `release.zip` 的 SHA256、大小與內含檔案。
-7. 將 `release.zip` 送到客戶主機。
-8. 由客戶主機執行 `update.bat`。
-9. `update.bat` 解壓縮 `release.zip`，完成更新。
+4. 先在 `frontend` 重新 `npm run build`，產出最新 `dist`。
+5. 再把 `dist` 同步到 `C:\ai_erp_itac\nginx\html\ai`，讓部署目錄和最新前端一致。
+6. 以目前輸出內容建立 `release.zip`。
+7. 若需要驗證，先比對 `release.zip` 的 SHA256、大小與內含檔案。
+8. 將 `release.zip` 送到客戶主機。
+9. 由客戶主機執行 `update.bat`。
+10. `update.bat` 解壓縮 `release.zip`，完成更新。
 
 ## 目前這套專案的慣例
 

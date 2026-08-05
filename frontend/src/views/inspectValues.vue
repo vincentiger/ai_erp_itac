@@ -886,8 +886,9 @@ function parseMeasurementNumber(value) {
     .replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
     .replace(/[\s,]*(?:mm|㎜|cm|㎝|m|μm|um|nm|inch|in|%|℃|°|度)\s*$/ig, '')
     .trim()
-  const token = extractStandardValueToken(stripped)
-  if (token && token !== stripped) {
+  const firstNumericToken = stripped.match(/-?\d+\s+\d+\/\d+|-?\d+\/\d+|-?\d+(?:\.\d+)?/)
+  if (firstNumericToken) {
+    const token = firstNumericToken[0].trim()
     const tokenMixedFraction = token.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
     if (tokenMixedFraction) {
       const whole = Number(tokenMixedFraction[1] || 0)
@@ -936,6 +937,19 @@ function extractStandardValueToken(raw) {
   if (simpleFraction) return simpleFraction[0].replace(/\s+/g, '')
   const decimal = cleaned.match(/-?\d+(?:\.\d+)?/)
   return decimal ? decimal[0] : ''
+}
+
+function extractStandardValueTokens(raw) {
+  const text = String(raw ?? '').trim()
+  if (!text) return []
+  const cleaned = text.replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '').replace(/\b(MIN|MAX)\b/gi, '').trim()
+  if (!cleaned) return []
+  return cleaned
+    .split(/[\/／]+|(?:\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至))/)
+    .map(x => x.trim())
+    .filter(Boolean)
+    .map(value => extractStandardValueToken(value))
+    .filter(Boolean)
 }
 
 function isAngleUnit(unit) {
@@ -1155,6 +1169,7 @@ function updateStandardValue(item) {
   const unit = String(item.std_unit || '').trim()
   const min = String(item.std_min ?? '').trim()
   const max = String(item.std_max ?? '').trim()
+  const minTokens = min ? extractStandardValueTokens(min) : []
   if (unit === 'REF') {
     item.std_value = ['REF', min].filter(Boolean).join(' ')
     item.std_max = ''
@@ -1172,10 +1187,25 @@ function updateStandardValue(item) {
     item.std_value = ''
     return
   }
-  if (min && max) {
-    item.std_value = min === max
-      ? formatStandardValueText(min, unit)
-      : formatStandardRangeText(min, max, unit)
+  if (min && !max && minTokens.length >= 2 && !isRefStandardUnit(unit)) {
+    item.std_min = minTokens[0]
+    item.std_max = minTokens[1]
+    item.std_value = minTokens[0] === minTokens[1]
+      ? formatStandardValueText(minTokens[0], unit)
+      : formatStandardRangeText(minTokens[0], minTokens[1], unit)
+  } else if (min && max) {
+    if (min === max) {
+      const sameTokens = extractStandardValueTokens(min)
+      if (sameTokens.length >= 2 && !isRefStandardUnit(unit)) {
+        item.std_min = sameTokens[0]
+        item.std_max = sameTokens[1]
+        item.std_value = formatStandardRangeText(sameTokens[0], sameTokens[1], unit)
+      } else {
+        item.std_value = formatStandardValueText(min, unit)
+      }
+    } else {
+      item.std_value = formatStandardRangeText(min, max, unit)
+    }
   } else if (min) {
     item.std_value = `${formatStandardValueText(min, unit)} MIN`
   } else {
@@ -1205,7 +1235,13 @@ function handleStandardMinInput(item) {
   const min = String(item.std_min ?? '').trim()
   const max = String(item.std_max ?? '').trim()
   if (min && !max && !/^REF$/i.test(String(item.std_unit || '').trim())) {
-    item.std_max = item.std_min
+    const tokens = extractStandardValueTokens(min)
+    if (tokens.length >= 2) {
+      item.std_min = tokens[0]
+      item.std_max = tokens[1]
+    } else {
+      item.std_max = item.std_min
+    }
   }
   updateStandardValue(item)
 }
@@ -1333,10 +1369,12 @@ function standardRangeValidationError(item, index) {
 
   const min = parseMeasurementNumber(minRaw)
   const max = parseMeasurementNumber(maxRaw)
+  const minHint = extractStandardValueToken(minRaw)
+  const maxHint = extractStandardValueToken(maxRaw)
   const label = item.item_name ? `第 ${index + 1} 項「${item.item_name}」` : `第 ${index + 1} 項`
 
-  if (minRaw && min === null) return `${label} 的標準值最小值格式不正確`
-  if (maxRaw && max === null) return `${label} 的標準值最大值格式不正確`
+  if (minRaw && min === null && !minHint) return `${label} 的標準值最小值格式不正確`
+  if (maxRaw && max === null && !maxHint) return `${label} 的標準值最大值格式不正確`
   if (min !== null && max !== null && min > max) return `${label} 的標準值最小值不可大於最大值`
   return ''
 }

@@ -681,6 +681,29 @@ function formatStandardValueText(value, unit) {
   return [text, unit].filter(Boolean).join(' ')
 }
 
+function extractStandardValueTokens(raw) {
+  const text = String(raw ?? '').trim()
+  if (!text) return []
+  const cleaned = text.replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '').replace(/\b(MIN|MAX)\b/gi, '').trim()
+  if (!cleaned) return []
+  return cleaned
+    .split(/[\/／]+|(?:\s+(?:-|－|–|—|~|～|至)\s+|(?:－|–|—|~|～|至))/)
+    .map(x => x.trim())
+    .filter(Boolean)
+    .map(value => {
+      const token = String(value ?? '').trim()
+      if (!token) return ''
+      const cleanedToken = token.replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
+      const mixedFraction = cleanedToken.match(/-?\d+\s+\d+\/\d+/)
+      if (mixedFraction) return mixedFraction[0].replace(/\s+/g, ' ').trim()
+      const simpleFraction = cleanedToken.match(/-?\d+\/\d+/)
+      if (simpleFraction) return simpleFraction[0].replace(/\s+/g, '')
+      const decimal = cleanedToken.match(/-?\d+(?:\.\d+)?/)
+      return decimal ? decimal[0] : ''
+    })
+    .filter(Boolean)
+}
+
 function normalizeStandardAngle(item) {
   if (!item || !isAngleUnit(item.std_unit)) return
   item.std_min = formatAngleInput(item.std_min, { force: true })
@@ -697,6 +720,8 @@ function updateStandardValue(item) {
   const unit = String(item.std_unit || '').trim()
   const min = String(item.std_min ?? '').trim()
   const max = String(item.std_max ?? '').trim()
+  const minTokens = min ? extractStandardValueTokens(min) : []
+  const maxTokens = max ? extractStandardValueTokens(max) : []
   if (unit === 'REF') {
     item.std_value = ['REF', min].filter(Boolean).join(' ')
     item.std_max = ''
@@ -710,8 +735,25 @@ function updateStandardValue(item) {
   }
   if (!min && !max) {
     item.std_value = ''
+  } else if (min && !max && minTokens.length >= 2 && !isRefStandardUnit(unit)) {
+    item.std_min = minTokens[0]
+    item.std_max = minTokens[1]
+    item.std_value = minTokens[0] === minTokens[1]
+      ? formatStandardValueText(minTokens[0], unit)
+      : formatStandardRangeText(minTokens[0], minTokens[1], unit)
   } else if (min && max) {
-    item.std_value = min === max ? formatStandardValueText(min, unit) : formatStandardRangeText(min, max, unit)
+    if (min === max) {
+      const sameTokens = extractStandardValueTokens(min)
+      if (sameTokens.length >= 2 && !isRefStandardUnit(unit)) {
+        item.std_min = sameTokens[0]
+        item.std_max = sameTokens[1]
+        item.std_value = formatStandardRangeText(sameTokens[0], sameTokens[1], unit)
+      } else {
+        item.std_value = formatStandardValueText(min, unit)
+      }
+    } else {
+      item.std_value = formatStandardRangeText(min, max, unit)
+    }
   } else if (min) {
     item.std_value = `${formatStandardValueText(min, unit)} MIN`
   } else {
@@ -732,7 +774,15 @@ function handleStandardMinInput(item) {
   if (!item) return
   const min = String(item.std_min ?? '').trim()
   const max = String(item.std_max ?? '').trim()
-  if (min && !max && !isRefStandardUnit(item.std_unit)) item.std_max = item.std_min
+  if (min && !max && !isRefStandardUnit(item.std_unit)) {
+    const tokens = extractStandardValueTokens(min)
+    if (tokens.length >= 2) {
+      item.std_min = tokens[0]
+      item.std_max = tokens[1]
+    } else {
+      item.std_max = item.std_min
+    }
+  }
   updateStandardValue(item)
 }
 
@@ -765,12 +815,25 @@ function parseStandardValue(raw) {
   const values = parts.length ? parts : [body]
   const tokens = values.map(value => {
     const cleaned = String(value || '').trim().replace(/^[\s]*[ØøΦφ⌀∅]\s*/g, '')
-    const mixedFraction = cleaned.match(/-?\d+\s+\d+\/\d+/)
-    if (mixedFraction) return mixedFraction[0].replace(/\s+/g, ' ').trim()
-    const simpleFraction = cleaned.match(/-?\d+\/\d+/)
-    if (simpleFraction) return simpleFraction[0].replace(/\s+/g, '')
-    const decimal = cleaned.match(/-?\d+(?:\.\d+)?/)
-    return decimal ? decimal[0] : ''
+    const firstNumericToken = cleaned.match(/-?\d+\s+\d+\/\d+|-?\d+\/\d+|-?\d+(?:\.\d+)?/)
+    if (!firstNumericToken) return ''
+    const token = firstNumericToken[0].trim()
+    const mixedFraction = token.match(/^(-?\d+)\s+(\d+)\/(\d+)$/)
+    if (mixedFraction) {
+      const whole = Number(mixedFraction[1] || 0)
+      const numerator = Number(mixedFraction[2] || 0)
+      const denominator = Number(mixedFraction[3] || 0)
+      const sign = whole < 0 ? -1 : 1
+      return denominator ? String(sign * (Math.abs(whole) + numerator / denominator)) : ''
+    }
+    const simpleFraction = token.match(/^(-?)(\d+)\/(\d+)$/)
+    if (simpleFraction) {
+      const sign = simpleFraction[1] === '-' ? -1 : 1
+      const numerator = Number(simpleFraction[2] || 0)
+      const denominator = Number(simpleFraction[3] || 0)
+      return denominator ? String(sign * (numerator / denominator)) : ''
+    }
+    return token
   }).filter(Boolean)
   return { minValue: tokens[0] || '', maxValue: tokens[1] || '', unit }
 }

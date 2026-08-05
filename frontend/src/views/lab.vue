@@ -578,13 +578,13 @@
       <div class="mt-3">
         <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/90 backdrop-blur">
           <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 space-y-3">
-            <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-wrap">
+            <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-nowrap overflow-x-auto">
               <div class="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm">
                 目前狀態
               </div>
               <el-select
                 v-model="form.status_code"
-                class="status-select w-full sm:w-80"
+                class="status-select w-[22rem] min-w-[18rem]"
                 popper-class="lab-status-popper"
                 @change="onStatusChange"
               >
@@ -598,7 +598,7 @@
                 </el-option>
               </el-select>
             </div>
-            <div class="border-t border-slate-200 pt-3 flex justify-end gap-2">
+            <div class="border-t border-black/20 pt-3 flex justify-end gap-2">
               <el-button
                 v-if="state.formId"
                 type="danger"

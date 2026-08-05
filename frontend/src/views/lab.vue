@@ -579,7 +579,7 @@
         <div class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur">
           <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 space-y-3">
             <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-nowrap overflow-x-auto">
-              <div class="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm">
+              <div class="inline-flex min-w-[8rem] shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-orange-500 px-5 py-3 text-sm font-semibold leading-none text-white shadow-sm">
                 目前狀態
               </div>
               <el-select

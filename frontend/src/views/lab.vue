@@ -546,86 +546,8 @@
               </div>
             </el-card>
 
-            <el-card shadow="never">
-              <template #header><div class="font-semibold">7) 委託單成立確認</div></template>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="border rounded-xl p-3">
-                  <el-checkbox v-model="form.approval.customer_signature_checked">委託方簽名已確認</el-checkbox>
-                  <el-date-picker
-                    v-model="form.approval.customer_signature_date"
-                    type="date"
-                    class="w-full mt-2"
-                    format="YYYY-MM-DD"
-                    value-format="YYYY-MM-DD"
-                    placeholder="委託方簽名日期"
-                  />
-                  <input
-                    ref="customerSignatureInput"
-                    type="file"
-                    class="hidden"
-                    accept="image/*,.pdf"
-                    @change="uploadApprovalSignature('customer', $event)"
-                  />
-                  <div class="mt-2 flex items-center gap-2 flex-wrap">
-                    <el-button size="small" plain :loading="signatureState.uploading === 'customer'" @click="chooseApprovalSignature('customer')">
-                      上傳委託方簽名檔
-                    </el-button>
-                    <el-button
-                      v-if="form.approval.customer_signature_file?.url"
-                      size="small"
-                      plain
-                      @click="openAttachment(form.approval.customer_signature_file)"
-                    >
-                      {{ form.approval.customer_signature_file.name }}
-                    </el-button>
-                  </div>
-                </div>
-                <div class="border rounded-xl p-3">
-                  <el-checkbox v-model="form.approval.manager_approval_checked" :disabled="!isSupervisorUser">主管審核已確認</el-checkbox>
-                  <el-date-picker
-                    v-model="form.approval.manager_approval_date"
-                    type="date"
-                    class="w-full mt-2"
-                    format="YYYY-MM-DD"
-                    value-format="YYYY-MM-DD"
-                    placeholder="主管審核日期"
-                    :disabled="!isSupervisorUser"
-                  />
-                  <input
-                    ref="managerSignatureInput"
-                    type="file"
-                    class="hidden"
-                    accept="image/*,.pdf"
-                    @change="uploadApprovalSignature('manager', $event)"
-                  />
-                  <div class="mt-2 flex items-center gap-2 flex-wrap">
-                    <el-button
-                      size="small"
-                      plain
-                      :disabled="!isSupervisorUser"
-                      :loading="signatureState.uploading === 'manager'"
-                      @click="chooseApprovalSignature('manager')"
-                    >
-                      上傳主管簽名檔
-                    </el-button>
-                    <el-button
-                      v-if="form.approval.manager_signature_file?.url"
-                      size="small"
-                      plain
-                      @click="openAttachment(form.approval.manager_signature_file)"
-                    >
-                      {{ form.approval.manager_signature_file.name }}
-                    </el-button>
-                  </div>
-                  <div v-if="!isSupervisorUser" class="text-xs text-gray-500 mt-2">
-                    主管審核由主管登入後確認。
-                  </div>
-                </div>
-              </div>
-            </el-card>
-
             <el-card v-if="showQuotationFields" shadow="never">
-              <template #header><div class="font-semibold">9) 報價資訊</div></template>
+              <template #header><div class="font-semibold">7) 報價資訊</div></template>
               <el-form :model="form" label-position="top" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <el-form-item label="幣別">
                   <el-select v-model="form.quote_currency" placeholder="請選擇幣別" class="w-full">

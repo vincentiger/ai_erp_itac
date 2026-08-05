@@ -576,7 +576,7 @@
       </div>
 
       <div class="mt-3">
-        <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/90 backdrop-blur">
+        <div class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur">
           <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 space-y-3">
             <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-nowrap overflow-x-auto">
               <div class="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm">

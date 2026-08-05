@@ -10,7 +10,7 @@ IF COL_LENGTH('dbo.lab_qet_form', 'judge_date') IS NULL
 GO
 
 IF COL_LENGTH('dbo.lab_qet_form', 'judge_reviewer') IS NULL
-    ALTER TABLE dbo.lab_qet_form ADD judge_reviewer nvarchar(100) NULL;
+    ALTER TABLE dbo.lab_qet_form ADD judge_reviewer nvarchar(200) NULL;
 GO
 
 IF COL_LENGTH('dbo.lab_qet_form', 'is_deleted') IS NULL

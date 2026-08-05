@@ -6,42 +6,42 @@ CREATE TABLE dbo.lab_qet_form (
     template_code    VARCHAR(30) NOT NULL DEFAULT 'QET-15-01',
 
     entrust_no       NVARCHAR(50) NULL,
-    product_name     NVARCHAR(200) NULL,
-    specification    NVARCHAR(200) NULL,
+    product_name     NVARCHAR(300) NULL,
+    specification    NVARCHAR(300) NULL,
     plating_type     NVARCHAR(100) NULL,
 
-    dimension_standard NVARCHAR(200) NULL,
-    drawing_no       NVARCHAR(100) NULL,
-    regulation       NVARCHAR(100) NULL,
+    dimension_standard NVARCHAR(500) NULL,
+    drawing_no       NVARCHAR(200) NULL,
+    regulation       NVARCHAR(200) NULL,
 
-    lot_no           NVARCHAR(100) NULL,
+    lot_no           NVARCHAR(200) NULL,
     lot_qty          INT NULL,
 
-    material         NVARCHAR(100) NULL,
-    manufacturer     NVARCHAR(200) NULL,
+    material         NVARCHAR(200) NULL,
+    manufacturer     NVARCHAR(300) NULL,
 
     size_unit        VARCHAR(10) NULL,     -- mm / inch
 
     env_temp         DECIMAL(10,2) NULL,
     env_humidity     DECIMAL(10,2) NULL,
-    sampling_plan    NVARCHAR(100) NULL,
+    sampling_plan    NVARCHAR(300) NULL,
 
     test_date        DATE NULL,
     completed_date   DATE NULL,
     filled_date      DATE NULL,
 
-    tester           NVARCHAR(100) NULL,
-    reviewer         NVARCHAR(100) NULL,
+    tester           NVARCHAR(200) NULL,
+    reviewer         NVARCHAR(200) NULL,
 
     final_result     NVARCHAR(20) NULL,    -- PASS / FAIL / PENDING
-    remarks          NVARCHAR(500) NULL,
+    remarks          NVARCHAR(2000) NULL,
 
     status           VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
 
     created_at       DATETIME NOT NULL DEFAULT GETDATE(),
-    created_by       NVARCHAR(100) NULL,
+    created_by       NVARCHAR(200) NULL,
     updated_at       DATETIME NULL,
-    updated_by       NVARCHAR(100) NULL
+    updated_by       NVARCHAR(200) NULL
 );
 GO
 
@@ -61,18 +61,18 @@ CREATE TABLE dbo.lab_qet_item (
 
     seq_no         INT NOT NULL,
 
-    item_name      NVARCHAR(50) NOT NULL,      -- A / B / C
+    item_name      NVARCHAR(200) NOT NULL,      -- A / B / C
 
-    std_value      NVARCHAR(100) NULL,
-    actual_value   NVARCHAR(100) NULL,
+    std_value      NVARCHAR(200) NULL,
+    actual_value   NVARCHAR(200) NULL,
 
-    gauge_no       NVARCHAR(100) NULL,
+    gauge_no       NVARCHAR(200) NULL,
 
     inspect_qty    INT NULL,
 
     result         NVARCHAR(20) NULL,          -- PASS / FAIL
 
-    remark         NVARCHAR(200) NULL
+    remark         NVARCHAR(500) NULL
 );
 GO
 
@@ -91,7 +91,7 @@ CREATE TABLE dbo.lab_qet_measure (
 
     measure_no     INT NOT NULL,        -- 1~20 / 30
 
-    measure_value  NVARCHAR(50) NULL
+    measure_value  NVARCHAR(200) NULL
 );
 GO
 
@@ -151,21 +151,21 @@ BEGIN
 END
 GO
 
--- ¾÷±ñ©Ê½è ------------------------------------
--- ¥Dªí
+-- ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ ------------------------------------
+-- ï¿½Dï¿½ï¿½
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 /* =========================================================
-   lab ¾÷±ñ©Ê½è¸ÕÅç¸ê®Æªí
-   ¥ý§R°£¡A¦A­««Ø
+   lab ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Æªï¿½
+   ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½Aï¿½Aï¿½ï¿½ï¿½ï¿½
    ========================================================= */
 
 /* =========================================================
    1. DROP TABLE
-   ¨Ì¬Û¨Ì¶¶§Ç¡G³Ì¤l¼h -> ³Ì¤W¼h
+   ï¿½Ì¬Û¨Ì¶ï¿½ï¿½Ç¡Gï¿½Ì¤lï¿½h -> ï¿½Ì¤Wï¿½h
    ========================================================= */
 
 IF OBJECT_ID('dbo.labMechHydrogenData', 'U') IS NOT NULL
@@ -208,7 +208,7 @@ GO
    2. CREATE TABLE
    ========================================================= */
 
--- ¥Dªí
+-- ï¿½Dï¿½ï¿½
 CREATE TABLE dbo.labMechRptMain (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_no NVARCHAR(50) NOT NULL,
@@ -234,7 +234,7 @@ CREATE TABLE dbo.labMechRptMain (
 );
 GO
 
--- ³W®æ¥DÀÉ
+-- ï¿½Wï¿½ï¿½Dï¿½ï¿½
 CREATE TABLE dbo.labMechSpec (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     product_key NVARCHAR(100) NOT NULL,
@@ -252,7 +252,7 @@ CREATE TABLE dbo.labMechSpec (
 );
 GO
 
--- ´ú¸Õ¶µ¥Ø¥Dªí
+-- ï¿½ï¿½ï¿½Õ¶ï¿½ï¿½Ø¥Dï¿½ï¿½
 CREATE TABLE dbo.labMechRptItem (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_id INT NOT NULL,
@@ -277,7 +277,7 @@ CREATE TABLE dbo.labMechRptItem (
 );
 GO
 
--- ¼Æ­È«¬©ú²Ó
+-- ï¿½Æ­È«ï¿½ï¿½ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechTestValues (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_test_id INT NOT NULL,
@@ -295,7 +295,7 @@ CREATE TABLE dbo.labMechTestValues (
 );
 GO
 
--- OK/NG «¬©ú²Ó
+-- OK/NG ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechTestStatus (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_test_id INT NOT NULL,
@@ -309,7 +309,7 @@ CREATE TABLE dbo.labMechTestStatus (
 );
 GO
 
--- ²æºÒ¼h©ú²Ó
+-- ï¿½ï¿½Ò¼hï¿½ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechTestDecarb (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_test_id INT NOT NULL,
@@ -326,7 +326,7 @@ CREATE TABLE dbo.labMechTestDecarb (
 );
 GO
 
--- ÆQÃú´ú¸Õ
+-- ï¿½Qï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechSaltSpray (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_test_id INT NOT NULL,
@@ -346,7 +346,7 @@ CREATE TABLE dbo.labMechSaltSpray (
 );
 GO
 
--- ²B¯Ü´ú¸Õ
+-- ï¿½Bï¿½Ü´ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechHydrogen (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     report_test_id INT NOT NULL,
@@ -365,7 +365,7 @@ CREATE TABLE dbo.labMechHydrogen (
 );
 GO
 
--- ²B¯Ü´ú¸Õ©ú²Ó
+-- ï¿½Bï¿½Ü´ï¿½ï¿½Õ©ï¿½ï¿½ï¿½
 CREATE TABLE dbo.labMechHydrogenData (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     hydrogen_id INT NOT NULL,

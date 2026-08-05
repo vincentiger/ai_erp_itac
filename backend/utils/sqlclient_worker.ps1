@@ -4,6 +4,37 @@ Add-Type -AssemblyName System.Data
 $script:Conn = $null
 $script:ConnStr = $null
 
+function Format-DbValue($value) {
+  if ($null -eq $value -or $value -is [System.DBNull]) { return '<null>' }
+  $text = [string]$value
+  if ($text.Length -le 120) { return $text }
+  return $text.Substring(0, 120) + "...(" + $text.Length + ")"
+}
+
+function Describe-Command($cmd) {
+  $paramPairs = @()
+  foreach ($p in $cmd.Parameters) {
+    $paramPairs += ("{0}={1}" -f $p.ParameterName, (Format-DbValue $p.Value))
+  }
+  $paramText = if ($paramPairs.Count) { $paramPairs -join '; ' } else { '<none>' }
+  return @"
+SQL:
+$($cmd.CommandText)
+Params:
+$paramText
+"@
+}
+
+function Invoke-CommandWithContext($label, $cmd, [scriptblock]$action) {
+  try {
+    return & $action
+  } catch {
+    $message = $_.Exception.Message
+    $context = Describe-Command $cmd
+    throw "$label failed: $message`n$context"
+  }
+}
+
 function Add-Params($cmd, $params) {
   foreach ($p in $params) {
     $val = $p.value
@@ -49,7 +80,9 @@ function Invoke-Payload($payload) {
     Add-Params $cmd $payload.params
     $adapter = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
     $table = New-Object System.Data.DataTable
-    [void]$adapter.Fill($table)
+    Invoke-CommandWithContext 'query' $cmd {
+      [void]$adapter.Fill($table)
+    }
     return [pscustomobject]@{ ok = $true; rows = (Table-ToRows $table) }
   }
 
@@ -57,7 +90,9 @@ function Invoke-Payload($payload) {
     $cmd = $conn.CreateCommand()
     $cmd.CommandText = [string]$payload.sql
     Add-Params $cmd $payload.params
-    $count = $cmd.ExecuteNonQuery()
+    $count = Invoke-CommandWithContext 'execute' $cmd {
+      $cmd.ExecuteNonQuery()
+    }
     return [pscustomobject]@{ ok = $true; rowcount = $count }
   }
 
@@ -70,7 +105,9 @@ function Invoke-Payload($payload) {
         $cmd.Transaction = $tx
         $cmd.CommandText = [string]$stmt.sql
         Add-Params $cmd $stmt.params
-        $counts += $cmd.ExecuteNonQuery()
+        $counts += Invoke-CommandWithContext 'transaction' $cmd {
+          $cmd.ExecuteNonQuery()
+        }
       }
       $tx.Commit()
       return [pscustomobject]@{ ok = $true; rowcounts = $counts }
@@ -88,7 +125,9 @@ function Invoke-Payload($payload) {
       Add-Params $cmd $stmt.params
       $adapter = New-Object System.Data.SqlClient.SqlDataAdapter $cmd
       $table = New-Object System.Data.DataTable
-      [void]$adapter.Fill($table)
+      Invoke-CommandWithContext 'batch_query' $cmd {
+        [void]$adapter.Fill($table)
+      }
       $results += ,@(Table-ToRows $table)
     }
     return [pscustomobject]@{ ok = $true; results = $results }

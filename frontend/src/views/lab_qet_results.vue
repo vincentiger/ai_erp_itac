@@ -2,18 +2,6 @@
   <div class="min-h-screen bg-slate-50 overflow-hidden">
     <main class="mx-auto w-[94vw] max-w-[1500px] pt-4 pb-6">
       <section class="bg-white border border-slate-200 overflow-hidden">
-        <div class="px-4 py-3 flex items-center justify-between border-b border-slate-200 gap-3 flex-wrap">
-          <div />
-          <button
-            class="h-9 px-3 bg-white border border-slate-300 disabled:opacity-40"
-            :disabled="loading"
-            type="button"
-            @click="reload"
-          >
-            重新整理
-          </button>
-        </div>
-
         <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
           <div class="flex flex-wrap items-center gap-2 xl:flex-nowrap">
             <input
@@ -59,6 +47,14 @@
               @click="clearFilters"
             >
               清除
+            </button>
+            <button
+              class="h-9 shrink-0 rounded border border-slate-300 bg-white px-3 ml-auto"
+              :disabled="loading"
+              type="button"
+              @click="reload"
+            >
+              重新整理
             </button>
           </div>
         </div>

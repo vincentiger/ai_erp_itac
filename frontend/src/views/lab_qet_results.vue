@@ -15,24 +15,24 @@
         </div>
 
         <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div class="flex flex-wrap items-center gap-2 xl:flex-nowrap">
             <input
               v-model.trim="searchLabNo"
-              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="委託單編號"
               type="text"
               @keyup.enter="applyFilters"
             >
             <input
               v-model.trim="searchCustomer"
-              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="客戶名稱"
               type="text"
               @keyup.enter="applyFilters"
             >
             <select
               v-model="searchResult"
-              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
             >
               <option value="">全部判定結果</option>
               <option value="PASS">PASS</option>
@@ -41,22 +41,20 @@
             </select>
             <input
               v-model.trim="searchReviewer"
-              class="h-9 rounded border border-slate-300 bg-white px-3 text-sm"
+              class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="審查人"
               type="text"
               @keyup.enter="applyFilters"
             >
-          </div>
-          <div class="mt-3 flex items-center gap-2">
             <button
-              class="h-9 px-3 rounded bg-slate-900 text-white"
+              class="h-9 shrink-0 rounded bg-slate-900 px-3 text-white"
               type="button"
               @click="applyFilters"
             >
               搜尋
             </button>
             <button
-              class="h-9 px-3 rounded bg-white border border-slate-300"
+              class="h-9 shrink-0 rounded border border-slate-300 bg-white px-3"
               type="button"
               @click="clearFilters"
             >

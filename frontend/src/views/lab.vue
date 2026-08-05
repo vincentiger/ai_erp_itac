@@ -619,35 +619,6 @@
               </div>
             </el-card>
 
-            <el-card v-if="isSupervisorUser" shadow="never">
-              <template #header><div class="font-semibold">8) 目前狀態</div></template>
-              <div class="grid grid-cols-1 gap-3">
-                <div class="border rounded-xl p-3">
-                  <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                      <div class="font-semibold">狀態</div>
-                      <div class="text-xs text-gray-500 mt-1">切換後儲存，系統會依狀態產生不同編號。</div>
-                    </div>
-                    <el-select v-model="form.status_code" class="w-full sm:w-80" @change="onStatusChange">
-                      <el-option
-                        v-for="option in statusSelectOptions"
-                        :key="option.code"
-                        :label="`${option.code}).${option.label}`"
-                        :value="option.code"
-                      />
-                    </el-select>
-                  </div>
-                </div>
-                <div class="border rounded-xl p-3">
-                  <div class="text-xs text-gray-500">委託單編號</div>
-                  <div class="font-mono text-base mt-1">{{ form.lab_no || '-' }}</div>
-                  <div v-if="form.status_code === '4' && form.report_no" class="text-xs text-gray-500 mt-1">
-                    報告號碼：{{ form.report_no }}
-                  </div>
-                </div>
-              </div>
-            </el-card>
-
             <el-card v-if="showQuotationFields" shadow="never">
               <template #header><div class="font-semibold">9) 報價資訊</div></template>
               <el-form :model="form" label-position="top" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -679,7 +650,24 @@
 
       <div class="mt-3">
         <div class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/90 backdrop-blur">
-          <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 flex justify-end gap-2">
+          <div class="max-w-6xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-3 flex-wrap">
+            <div v-if="isSupervisorUser" class="flex items-center gap-3 flex-wrap">
+              <div class="inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm">
+                目前狀態
+              </div>
+              <el-select
+                v-model="form.status_code"
+                class="w-full sm:w-80"
+                @change="onStatusChange"
+              >
+                <el-option
+                  v-for="option in statusSelectOptions"
+                  :key="option.code"
+                  :label="`${option.code}).${option.label}`"
+                  :value="option.code"
+                />
+              </el-select>
+            </div>
             <el-button
               v-if="state.formId"
               type="danger"
@@ -1801,6 +1789,10 @@ async function saveDraftReal(options = {}) {
     }
     state.persistedStatusCode = normalizeStatusCode(form.status_code)
     state.lastStatusCode = state.persistedStatusCode
+
+    if (refresh && state.formId) {
+      await loadSavedForm()
+    }
 
     ElMessage.success(isUpdate ? '更新成功' : '儲存成功')
     return true

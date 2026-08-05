@@ -69,6 +69,8 @@ start "" "%NGINX_DIR%\nginx.exe" -p "%NGINX_DIR%" -c "conf\nginx.conf"
 echo [2/2] Starting backend...
 start "AI ERP Backend" cmd /k ""%BACKEND%\start_backend.bat""
 
+call :OPEN_LOGIN
+
 echo [WAIT] Waiting for backend port 8080...
 set /a BACKEND_WAIT=0
 :WAIT_BACKEND
@@ -86,6 +88,9 @@ goto WAIT_BACKEND
 
 :BACKEND_READY
 echo [OK] Backend port 8080 is ready.
+endlocal & exit /b 0
+
+:OPEN_LOGIN
 set "CHROME_EXE="
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "CHROME_EXE=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
 if not defined CHROME_EXE if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "CHROME_EXE=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
@@ -95,4 +100,4 @@ if defined CHROME_EXE (
 ) else (
   start "" "http://127.0.0.1:81/ai/#/login?account=sys&password=1120"
 )
-endlocal
+goto :eof

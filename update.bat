@@ -216,7 +216,7 @@ taskkill /f /im python.exe /t >nul 2>&1
 echo.
 echo [4/5] Deploy files to installed root...
 robocopy "%STAGING_DIR%" "%ROOT%" /E /R:1 /W:1 ^
-    /XD ".git" "release" "logs" "node_modules" "dist" "build" "__pycache__" ".venv" ".venv_local" "ssl" ^
+    /XD ".git" "release" "logs" "node_modules" "dist" "build" "__pycache__" ".venv" ".venv_local" ^
     /XF ".env" "release.zip" "*.pyc" "*.pyo" "*.log" "*.bak" >nul
 if errorlevel 8 (
     echo [ERROR] Deployment copy failed

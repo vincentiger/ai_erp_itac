@@ -1835,7 +1835,13 @@ async function goToMechanicalReport() {
     }
     router.push({
       name: 'lab_mech',
-      query: { source_form_id: sourceFormId }
+      query: {
+        source_form_id: sourceFormId,
+        back_form_id: String(route.query.form_id || state.formId || '').trim(),
+        back_source_form_id: String(route.query.source_form_id || '').trim(),
+        back_from: String(route.query.from || '').trim(),
+        from: 'lab_qet',
+      }
     })
   } catch (e) {
     ElMessage.error(e.message || '無法前往機械性質紀錄')

@@ -2442,6 +2442,17 @@ function openSourceDialog() {
 function goBackPage() {
   const target = String(returnToPage.value || '').trim()
   if (target) {
+    if (target === 'lab_qet') {
+      const query = {}
+      const backFormId = String(route.query.back_form_id || '').trim()
+      const backSourceFormId = String(route.query.back_source_form_id || '').trim()
+      const backFrom = String(route.query.back_from || '').trim()
+      if (backFormId) query.form_id = backFormId
+      if (backSourceFormId) query.source_form_id = backSourceFormId
+      if (backFrom) query.from = backFrom
+      router.push({ name: target, query }).catch(() => {})
+      return
+    }
     router.push({ name: target }).catch(() => {})
     return
   }

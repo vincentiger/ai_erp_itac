@@ -1045,6 +1045,17 @@ function openSourceDialog() {
 function goBackPage() {
   const target = String(returnToPage.value || '').trim()
   if (target) {
+    if (target === 'lab') {
+      const query = {}
+      const backFormId = String(route.query.back_form_id || '').trim()
+      const backFrom = String(route.query.back_from || '').trim()
+      const formId = String(route.query.form_id || '').trim()
+      if (backFormId) query.form_id = backFormId
+      else if (formId) query.form_id = formId
+      if (backFrom) query.from = backFrom
+      router.push({ name: target, query }).catch(() => {})
+      return
+    }
     router.push({ name: target }).catch(() => {})
     return
   }

@@ -2289,7 +2289,12 @@ async function openInspectValues() {
     await ensureSourceReady()
     router.push({
       name: 'lab_qet',
-      query: { source_form_id: state.formId, from: 'lab' }
+      query: {
+        source_form_id: state.formId,
+        from: 'lab',
+        back_form_id: String(route.query.form_id || state.formId || '').trim(),
+        back_from: String(route.query.from || 'lab_view').trim(),
+      }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟尺寸原始記錄表')
@@ -2301,7 +2306,12 @@ async function openInspectStandard() {
     await ensureSourceReady()
     router.push({
       name: 'lab_qet_standard',
-      query: { source_form_id: state.formId, from: 'lab' }
+      query: {
+        source_form_id: state.formId,
+        from: 'lab',
+        back_form_id: String(route.query.form_id || state.formId || '').trim(),
+        back_from: String(route.query.from || 'lab_view').trim(),
+      }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟設定尺寸原始記錄表')
@@ -2313,7 +2323,12 @@ async function openLabMech() {
     await ensureSourceReady()
     router.push({
       name: 'lab_mech',
-      query: { source_form_id: state.formId, from: 'lab' }
+      query: {
+        source_form_id: state.formId,
+        from: 'lab',
+        back_form_id: String(route.query.form_id || state.formId || '').trim(),
+        back_from: String(route.query.from || 'lab_view').trim(),
+      }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟機械性質試驗表')
@@ -2325,7 +2340,12 @@ async function openLabMechStandard() {
     await ensureSourceReady()
     router.push({
       name: 'lab_mech_standard',
-      query: { source_form_id: state.formId, from: 'lab' }
+      query: {
+        source_form_id: state.formId,
+        from: 'lab',
+        back_form_id: String(route.query.form_id || state.formId || '').trim(),
+        back_from: String(route.query.from || 'lab_view').trim(),
+      }
     })
   } catch (e) {
     ElMessage.warning(e.message || '無法開啟設定機械性質檢驗記錄表')

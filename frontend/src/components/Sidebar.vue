@@ -117,13 +117,33 @@ function isActive(item) {
   return false
 }
 
+function buildReloadQuery() {
+  return {
+    ...route.query,
+    __reload: String(Date.now()),
+  }
+}
+
 function onItemClick(item) {
+  const sameRoute = (
+    (item.routeName && route.name && String(route.name) === String(item.routeName)) ||
+    (item.path && route.path && String(route.path) === String(item.path))
+  )
+
   if (item.routeName) {
-    router.push({ name: item.routeName })
+    if (sameRoute) {
+      router.replace({ name: item.routeName, query: buildReloadQuery() })
+    } else {
+      router.push({ name: item.routeName })
+    }
     return
   }
   if (item.path) {
-    router.push(item.path)
+    if (sameRoute) {
+      router.replace({ path: item.path, query: buildReloadQuery() })
+    } else {
+      router.push(item.path)
+    }
     return
   }
   console.warn('[Sidebar] menu item has no route:', item._raw)

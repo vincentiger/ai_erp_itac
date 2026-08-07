@@ -75,10 +75,9 @@
         <!-- subtle background like ChatGPT -->
         <div class="h-full min-h-0 bg-slate-50">
           <router-view v-slot="{ Component, route }">
-            <component
-              :is="Component"
-              :key="`${route.name || route.path}:${String(route.query.__reload || '')}`"
-            />
+            <keep-alive>
+              <component :is="Component" :key="route.name || route.path" />
+            </keep-alive>
           </router-view>
         </div>
       </el-main>

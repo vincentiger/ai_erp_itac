@@ -338,7 +338,6 @@ const handleMenuClick = (targetName, title = null) => {
   const formattedBase = APP_BASE.endsWith('/') ? APP_BASE : `${APP_BASE}/`
 
   currentUrl.value = `${ORIGIN}${formattedBase}#${routePath}`
-  iframeKey.value += 1
 
   console.log('導航至 URL:', currentUrl.value)
 
@@ -420,7 +419,6 @@ async function uploadVoiceToInput() {
 
 // ========= iframe 通訊 =========
 const iframeRef = ref(null)
-const iframeKey = ref(0)
 const pendingIframeMessage = ref(null)
 
 // ✅ 把 payload 轉成「可 postMessage」的純資料（避免 DataCloneError）
@@ -1050,7 +1048,6 @@ onUnmounted(() => {
           <iframe
             ref="iframeRef"
             :src="currentUrl"
-            :key="iframeKey"
             class="w-full h-full border-none"
             @load="onIframeLoad"
           />

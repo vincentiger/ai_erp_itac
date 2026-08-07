@@ -122,9 +122,9 @@
           />
         </div>
 
-        <el-input v-model="q.customer" placeholder="客戶（模糊查詢）" clearable />
-        <el-input v-model="q.sales_rep" placeholder="業務代表（模糊查詢）" clearable />
-        <el-input v-model="q.company_title" placeholder="公司別（模糊查詢）" clearable />
+        <el-input v-db-limit v-model="q.customer" placeholder="客戶（模糊查詢）" clearable />
+        <el-input v-db-limit v-model="q.sales_rep" placeholder="業務代表（模糊查詢）" clearable />
+        <el-input v-db-limit v-model="q.company_title" placeholder="公司別（模糊查詢）" clearable />
 
         <el-input-number v-model="q.top" :min="10" :max="5000" :step="10" controls-position="right" style="width:100%;">
           <template #prefix>Top</template>

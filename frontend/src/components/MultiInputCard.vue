@@ -6,7 +6,7 @@
 <div class="mt-3">
   <!-- 外框：唯一邊框 -->
   <div class="input-group-outer">
-    <input
+    <input v-db-limit
       ref="inputEl"
       class="input-group-field"
       :placeholder="placeholder"
@@ -49,6 +49,7 @@
 
 <script setup>
 import { ref, nextTick, computed } from 'vue'
+import { clampText } from '@/utils/dbField'
 
 const inputEl = ref(null)
 
@@ -67,6 +68,7 @@ const props = defineProps({
   placeholder: { type: String, default: '新增…' },
   inputmode: { type: String, default: 'text' },
   voiceKey: { type: String, default: '' },
+  maxLength: { type: [Number, String], default: null },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -83,7 +85,7 @@ const list = computed(() => {
 })
 
 function add() {
-  const s = String(v.value || '').trim()
+  const s = clampText(String(v.value || '').trim(), props.maxLength).trim()
   if (!s) return
   emit('update:modelValue', [...list.value, s])
   v.value = ''

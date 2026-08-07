@@ -56,40 +56,40 @@
             <div class="fixed-search" :class="{ show: showSearch }">
               <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-md w-[min(680px,92vw)]">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
+                  <input v-db-limit
                     ref="searchInputRef"
                     class="input-group-field"
                     placeholder="關鍵字：PI / 客戶 / 客戶單號 / 抬頭 / 業務…"
                     v-model="f_kw"
                     @keydown.enter="goFirstPageAndReload"
                   />
-                  <input
+                  <input v-db-limit
                     class="input-group-field"
                     placeholder="客戶名稱"
                     v-model="f_company"
                     @keydown.enter="goFirstPageAndReload"
                   />
 
-                  <input
+                  <input v-db-limit
                     class="input-group-field"
                     placeholder="公司別"
                     v-model="f_company_title"
                     @keydown.enter="goFirstPageAndReload"
                   />
-                  <input
+                  <input v-db-limit
                     class="input-group-field"
                     placeholder="業務代表"
                     v-model="f_sales_rep"
                     @keydown.enter="goFirstPageAndReload"
                   />
 
-                  <input
+                  <input v-db-limit
                     class="input-group-field"
                     type="date"
                     v-model="f_date_from"
                     title="起日"
                   />
-                  <input
+                  <input v-db-limit
                     class="input-group-field"
                     type="date"
                     v-model="f_date_to"

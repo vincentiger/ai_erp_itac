@@ -8,9 +8,9 @@
             <div class="text-xs text-slate-500 mt-1">可查詢、進入修改，或勾選後刪除。</div>
           </div>
           <div class="flex items-center gap-2 flex-wrap justify-end">
-            <input v-model="searchEntrustNo" class="input-field" placeholder="委託單編號" @keydown.enter="reloadFromFirstPage" />
-            <input v-model="searchFormNo" class="input-field" placeholder="記錄表標號" @keydown.enter="reloadFromFirstPage" />
-            <input v-model="searchCustomer" class="input-field" placeholder="客戶名稱" @keydown.enter="reloadFromFirstPage" />
+            <input v-db-limit v-model="searchEntrustNo" class="input-field" placeholder="委託單編號" @keydown.enter="reloadFromFirstPage" />
+            <input v-db-limit v-model="searchFormNo" class="input-field" placeholder="記錄表標號" @keydown.enter="reloadFromFirstPage" />
+            <input v-db-limit v-model="searchCustomer" class="input-field" placeholder="客戶名稱" @keydown.enter="reloadFromFirstPage" />
             <button class="tool-btn" type="button" :disabled="loading" @click="reloadFromFirstPage">搜尋</button>
           </div>
         </div>
@@ -34,7 +34,7 @@
             <tbody>
               <tr v-for="row in pagedRows" :key="row.form_id" class="tr hover:bg-slate-100">
                 <td class="td checkbox-col text-center">
-                  <input type="checkbox" v-model="selectedFormIds" :value="row.form_id" />
+                  <input v-db-limit type="checkbox" v-model="selectedFormIds" :value="row.form_id" />
                 </td>
                 <td class="td">
                   <a href="javascript:void(0)" class="refno-link" @click="openForm(row)">

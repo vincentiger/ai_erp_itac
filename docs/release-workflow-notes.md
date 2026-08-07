@@ -115,6 +115,24 @@
 
 也就是說，現在更新流程已經不是「手動傳 zip 但不會生效」，而是 `update.bat` 真的會把 zip 內容部署到 live 目錄。
 
+## 這次補上的前端共用輸入限制層
+
+2026-08-07 這次前端新增了一層共用的 DB 欄位長度限制：
+
+- 新增 `frontend/src/utils/dbField.js`
+- 全域註冊 `v-db-limit`
+- 讓文字型輸入框可直接依 `maxlength` 或 schema 裁切
+- `CustomerCreate` 先接上 `buildFieldInputAttrs` 與 `normalizeRecordByContext`
+- `MultiInputCard` 已改成在送出前就先裁掉超長內容
+
+這次也把 `frontend/src` 底下多個頁面的文字輸入框批次掛上 `v-db-limit`，讓既有頁面不用逐一重寫就能先吃到裁切保護。
+
+### 這次重新產出的 `release.zip`
+
+- 產出時間：2026-08-07
+- 位置：`C:\ai_erp_itac\release.zip`
+- SHA256：`588F2C62832570BDCE749323329B6835C0082E4E6AA8EC78D94EF120CE1E53AA`
+
 ## 建議的後續做法
 
 1. 每次修復後都先在 `D:\ai_erp_itac` 驗證。

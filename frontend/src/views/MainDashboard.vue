@@ -934,7 +934,7 @@ onUnmounted(() => {
               :close-on-click-modal="true"
             >
               <div class="flex items-center gap-2 mb-3">
-                <el-input
+                <el-input v-db-limit
                   v-model="cmdKw"
                   placeholder="搜尋：未出清 / 已出清 / 出貨達成率 / Top10 / 業務績效 / 催單..."
                   clearable
@@ -962,7 +962,7 @@ onUnmounted(() => {
           <!-- ✅ ChatGPT-like 輸入區：右側內嵌麥克風/上傳/送出 -->
           <div class="w-full">
             <div class="ai-input-wrap">
-              <el-input
+              <el-input v-db-limit
                 v-model="aiInput"
                 type="textarea"
                 :rows="6"

@@ -18,7 +18,7 @@
           <label class="block text-sm font-bold text-slate-700 mb-2">
             帳號<span class="text-red-500 ml-1">*</span>
           </label>
-          <input
+          <input v-db-limit
             ref="accountInput"
             v-model="account"
             type="text"
@@ -43,7 +43,7 @@
           <label class="block text-sm font-bold text-slate-700 mb-2">
             密碼<span class="text-red-500 ml-1">*</span>
           </label>
-          <input
+          <input v-db-limit
             ref="passwordInput"
             v-model="password"
             type="password"
@@ -56,7 +56,7 @@
         </div>
 
         <label class="flex items-center gap-2 text-sm text-slate-600 select-none">
-          <input
+          <input v-db-limit
             v-model="rememberMe"
             type="checkbox"
             class="h-4 w-4 rounded border-slate-300 text-lime-600 focus:ring-lime-500"

@@ -16,37 +16,37 @@
             {{ isPickMode ? '選擇要匯入的委託測試單' : '委託測試單列表' }}
           </div>
           <div class="flex items-center gap-2 flex-wrap justify-end">
-            <input
+            <input v-db-limit
               v-model="searchLabNo"
               class="input-field"
               placeholder="委託編號"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchCustomer"
               class="input-field"
               placeholder="客戶名稱"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchPartNo"
               class="input-field"
               placeholder="Part No."
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchDrawingNo"
               class="input-field"
               placeholder="圖號"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchSampleSpec"
               class="input-field"
               placeholder="尺寸 / 規格"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchDate"
               type="date"
               class="input-field"
@@ -81,7 +81,7 @@
             <tbody>
               <tr v-for="r in rows" :key="r.form_id" class="tr hover:bg-slate-100">
                 <td class="td checkbox-col text-center">
-                  <input type="checkbox" v-model="selectedFormIds" :value="r.form_id" />
+                  <input v-db-limit type="checkbox" v-model="selectedFormIds" :value="r.form_id" />
                 </td>
                 <td class="td">
                   <a

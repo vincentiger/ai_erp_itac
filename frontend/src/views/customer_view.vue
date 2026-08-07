@@ -32,7 +32,7 @@
                 <span class="tool-text md:hidden">說明</span>
               </button>
               <div class="fixed-search inline-search">
-                <input
+                <input v-db-limit
                   ref="searchInputRef"
                   class="input-group-field"
                   placeholder="搜尋：客戶代號 / 公司 / 簡稱 / 電話 / 地址…"
@@ -145,7 +145,7 @@
                 :class="rowClass(r)"
               >
                 <td v-if="mode === 'delete'" class="td text-center" style="width:56px;min-width:56px;max-width:56px;">
-                  <input type="checkbox" v-model="selectedRefnos" :value="r.refno" />
+                  <input v-db-limit type="checkbox" v-model="selectedRefnos" :value="r.refno" />
                 </td>
                 <td class="td" :style="colStyle('refno')">
                   <template v-if="r.__d.refno">

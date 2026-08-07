@@ -23,7 +23,7 @@
 
         <!-- Quick search (optional) -->
         <div class="mt-3">
-          <input
+          <input v-db-limit
             v-model="sidebarSearch"
             type="text"
             placeholder="搜尋功能…"

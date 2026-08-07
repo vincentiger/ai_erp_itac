@@ -103,22 +103,22 @@
           </template>
 
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            <el-input v-model="state.header.report_no" placeholder="委託編號 / 報告編號" />
-            <el-input v-model="state.header.entrust_no" placeholder="委託單號" />
-            <el-input v-model="state.header.product_name" placeholder="品名" />
-            <el-input v-model="state.header.spec_desc" placeholder="規格" />
+            <el-input v-db-limit v-model="state.header.report_no" placeholder="委託編號 / 報告編號" />
+            <el-input v-db-limit v-model="state.header.entrust_no" placeholder="委託單號" />
+            <el-input v-db-limit v-model="state.header.product_name" placeholder="品名" />
+            <el-input v-db-limit v-model="state.header.spec_desc" placeholder="規格" />
 
-            <el-input v-model="state.header.lot_no" placeholder="批號" />
+            <el-input v-db-limit v-model="state.header.lot_no" placeholder="批號" />
             <el-input-number v-model="state.header.lot_qty" :min="0" class="w-full" placeholder="批量" />
-            <el-input v-model="state.header.plating" placeholder="鍍別" />
-            <el-input v-model="state.header.material" placeholder="材質" />
+            <el-input v-db-limit v-model="state.header.plating" placeholder="鍍別" />
+            <el-input v-db-limit v-model="state.header.material" placeholder="材質" />
 
-            <el-input v-model="state.header.manufacturer" placeholder="製造廠商" />
+            <el-input v-db-limit v-model="state.header.manufacturer" placeholder="製造廠商" />
             <el-select v-model="state.header.standard_type" placeholder="依據標準類型">
               <el-option label="圖號" value="drawing" />
               <el-option label="法規" value="regulation" />
             </el-select>
-            <el-input v-model="state.header.standard_desc" placeholder="圖號 / 法規標準" />
+            <el-input v-db-limit v-model="state.header.standard_desc" placeholder="圖號 / 法規標準" />
             <el-select
               v-model="mechTesterSelection"
               multiple
@@ -129,7 +129,7 @@
               placeholder="可輸入多位測試人員"
             />
 
-            <el-input v-model="state.header.reviewer" placeholder="覆核人員" />
+            <el-input v-db-limit v-model="state.header.reviewer" placeholder="覆核人員" />
             <el-input-number v-model="state.header.env_temp" :step="0.1" class="w-full" placeholder="溫度 ℃" />
             <el-input-number v-model="state.header.env_humidity" :step="0.1" class="w-full" placeholder="濕度 %RH" />
             <el-date-picker
@@ -148,7 +148,7 @@
           </div>
 
           <div class="mt-3">
-            <el-input
+            <el-input v-db-limit
               v-model="state.header.remarks"
               type="textarea"
               :rows="3"
@@ -205,8 +205,8 @@
               />
             </el-select>
             <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('inspection_method', 'core_hardness')">+</el-button>
-            <el-input v-model="state.core_hardness.spec_min" placeholder="下限" />
-            <el-input v-model="state.core_hardness.spec_max" placeholder="上限" />
+            <el-input v-db-limit v-model="state.core_hardness.spec_min" placeholder="下限" />
+            <el-input v-db-limit v-model="state.core_hardness.spec_max" placeholder="上限" />
             <el-input-number
               v-model="state.core_hardness.sample_count"
               :min="1"
@@ -282,9 +282,9 @@
               <tbody>
                 <tr v-for="row in state.core_hardness.rows" :key="`core-${row.sample_no}`">
                   <td class="border p-2 text-center">{{ row.sample_no }}</td>
-                  <td class="border p-1"><el-input v-model="row.values[0]" class="test-value-input" /></td>
-                  <td class="border p-1"><el-input v-model="row.values[1]" class="test-value-input" /></td>
-                  <td class="border p-1"><el-input v-model="row.values[2]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[0]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[1]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[2]" class="test-value-input" /></td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.avg_value }}</td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.judge_value }}</td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.result }}</td>
@@ -351,8 +351,8 @@
               />
             </el-select>
             <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('inspection_method', 'surface_hardness')">+</el-button>
-            <el-input v-model="state.surface_hardness.spec_min" placeholder="下限" />
-            <el-input v-model="state.surface_hardness.spec_max" placeholder="上限" />
+            <el-input v-db-limit v-model="state.surface_hardness.spec_min" placeholder="下限" />
+            <el-input v-db-limit v-model="state.surface_hardness.spec_max" placeholder="上限" />
             <el-input-number
               v-model="state.surface_hardness.sample_count"
               :min="1"
@@ -396,7 +396,7 @@
               </el-select>
               <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('instrument_no', 'surface_hardness')">+</el-button>
             </div>
-            <el-input v-model="state.surface_hardness.spec_text" placeholder="規格說明" />
+            <el-input v-db-limit v-model="state.surface_hardness.spec_text" placeholder="規格說明" />
           </div>
 
           <div class="overflow-x-auto">
@@ -415,9 +415,9 @@
               <tbody>
                 <tr v-for="row in state.surface_hardness.rows" :key="`surface-${row.sample_no}`">
                   <td class="border p-2 text-center">{{ row.sample_no }}</td>
-                  <td class="border p-1"><el-input v-model="row.values[0]" class="test-value-input" /></td>
-                  <td class="border p-1"><el-input v-model="row.values[1]" class="test-value-input" /></td>
-                  <td class="border p-1"><el-input v-model="row.values[2]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[0]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[1]" class="test-value-input" /></td>
+                  <td class="border p-1"><el-input v-db-limit v-model="row.values[2]" class="test-value-input" /></td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.avg_value }}</td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.judge_value }}</td>
                   <td class="border p-2" :class="failClass(row.is_out_of_spec)">{{ row.result }}</td>
@@ -466,9 +466,9 @@
               </el-select>
               <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'carburizing_depth')">+</el-button>
             </div>
-            <el-input v-model="state.carburizing_depth.inspection_method" placeholder="檢驗方式" />
-            <el-input v-model="state.carburizing_depth.spec_min" placeholder="下限" />
-            <el-input v-model="state.carburizing_depth.spec_max" placeholder="上限" />
+            <el-input v-db-limit v-model="state.carburizing_depth.inspection_method" placeholder="檢驗方式" />
+            <el-input v-db-limit v-model="state.carburizing_depth.spec_min" placeholder="下限" />
+            <el-input v-db-limit v-model="state.carburizing_depth.spec_max" placeholder="上限" />
             <el-input-number v-model="state.carburizing_depth.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('carburizing_depth')" />
             <div class="flex items-center gap-2">
               <el-select
@@ -514,7 +514,7 @@
               class="grid grid-cols-4 gap-2 items-center"
             >
               <div>{{ row.sample_no }}</div>
-              <el-input v-model="row.value" class="test-value-input" />
+              <el-input v-db-limit v-model="row.value" class="test-value-input" />
               <div :class="failClass(rowFailByResult(row))">{{ row.result }}</div>
               <div></div>
             </div>
@@ -556,7 +556,7 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'decarb')">+</el-button>
                 </div>
-                <el-input v-model="state.decarb.inspection_method" placeholder="檢驗方式" />
+                <el-input v-db-limit v-model="state.decarb.inspection_method" placeholder="檢驗方式" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.decarb.unit"
@@ -573,7 +573,7 @@
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('unit', 'decarb')">+</el-button>
                 </div>
                 <el-input-number v-model="state.decarb.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數" @change="syncSectionRowsToCount('decarb')" />
-                <el-input v-model="state.decarb.spec_text" placeholder="標準值" />
+                <el-input v-db-limit v-model="state.decarb.spec_text" placeholder="標準值" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.decarb.instrument_no"
@@ -609,12 +609,12 @@
                   <tbody>
                     <tr v-for="row in state.decarb.rows" :key="`decarb-${row.sample_no}`">
                       <td class="border p-2 text-center">{{ row.sample_no }}</td>
-                      <td class="border p-1"><el-input v-model="row.hv1" class="test-value-input" /></td>
+                      <td class="border p-1"><el-input v-db-limit v-model="row.hv1" class="test-value-input" /></td>
                       <td class="border p-1" :class="failClass(row.hv2_ok === false)">
-                        <el-input v-model="row.hv2" class="test-value-input" />
+                        <el-input v-db-limit v-model="row.hv2" class="test-value-input" />
                       </td>
                       <td class="border p-1" :class="failClass(row.hv3_ok === false)">
-                        <el-input v-model="row.hv3" class="test-value-input" />
+                        <el-input v-db-limit v-model="row.hv3" class="test-value-input" />
                       </td>
                       <td class="border p-2" :class="failClass(row.result === 'FAIL')">{{ row.result }}</td>
                     </tr>
@@ -658,13 +658,13 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'salt_spray')">+</el-button>
                 </div>
-                <el-input v-model="state.salt_spray.inspection_method" placeholder="檢驗方式" />
+                <el-input v-db-limit v-model="state.salt_spray.inspection_method" placeholder="檢驗方式" />
 
                 <el-input-number v-model="state.salt_spray.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" />
 
-                <el-input v-model="state.salt_spray.data.white_spec_hours" placeholder="白鏽標準時數(H)" />
+                <el-input v-db-limit v-model="state.salt_spray.data.white_spec_hours" placeholder="白鏽標準時數(H)" />
 
-                <el-input v-model="state.salt_spray.data.red_spec_hours" placeholder="紅鏽標準時數(H)" />
+                <el-input v-db-limit v-model="state.salt_spray.data.red_spec_hours" placeholder="紅鏽標準時數(H)" />
 
                 <el-date-picker
                   v-model="state.salt_spray.data.start_at"
@@ -674,9 +674,9 @@
                   class="test-value-input"
                 />
 
-                <el-input v-model="state.salt_spray.data.end_at" placeholder="結束時間(系統回填)" readonly class="test-value-input" />
+                <el-input v-db-limit v-model="state.salt_spray.data.end_at" placeholder="結束時間(系統回填)" readonly class="test-value-input" />
 
-                <el-input v-model="state.salt_spray.data.actual_hours" placeholder="實際時數" class="test-value-input" />
+                <el-input v-db-limit v-model="state.salt_spray.data.actual_hours" placeholder="實際時數" class="test-value-input" />
 
                 <el-switch
                   v-model="state.salt_spray.data.angle_ok"
@@ -781,18 +781,18 @@
               </el-select>
               <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'hydrogen')">+</el-button>
             </div>
-            <el-input v-model="state.hydrogen.inspection_method" placeholder="檢驗方式" />
+            <el-input v-db-limit v-model="state.hydrogen.inspection_method" placeholder="檢驗方式" />
             <el-select v-model="state.hydrogen.data.test_hours" placeholder="測試時間">
               <el-option label="24 小時" :value="24" />
               <el-option label="48 小時" :value="48" />
             </el-select>
             <el-input-number v-model="state.hydrogen.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('hydrogen')" />
-            <el-input v-model="state.hydrogen.data.plate_thickness" placeholder="板厚" />
-            <el-input v-model="state.hydrogen.data.hole_diameter" placeholder="孔徑" />
-            <el-input v-model="state.hydrogen.data.plate_hardness" placeholder="板硬度" />
-            <el-input v-model="state.hydrogen.data.tighter_torque" placeholder="Tighter torque (kg/cm)" />
-            <el-input v-model="state.hydrogen.data.no_failures_after_hours" placeholder="No failures after (hrs)" />
-            <el-input v-model="state.hydrogen.spec_text" placeholder="標準值" />
+            <el-input v-db-limit v-model="state.hydrogen.data.plate_thickness" placeholder="板厚" />
+            <el-input v-db-limit v-model="state.hydrogen.data.hole_diameter" placeholder="孔徑" />
+            <el-input v-db-limit v-model="state.hydrogen.data.plate_hardness" placeholder="板硬度" />
+            <el-input v-db-limit v-model="state.hydrogen.data.tighter_torque" placeholder="Tighter torque (kg/cm)" />
+            <el-input v-db-limit v-model="state.hydrogen.data.no_failures_after_hours" placeholder="No failures after (hrs)" />
+            <el-input v-db-limit v-model="state.hydrogen.spec_text" placeholder="標準值" />
             <div class="flex items-center gap-2">
               <el-select
                 v-model="state.hydrogen.instrument_no"
@@ -891,12 +891,12 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drilling_speed')">+</el-button>
               </div>
-              <el-input v-model="state.drilling_speed.inspection_method" placeholder="檢驗方式" class="mb-3" />
-              <el-input v-model="state.drilling_speed.data.plate_thickness" placeholder="鐵板厚度" />
-                <el-input v-model="state.drilling_speed.data.plate_hardness" placeholder="鐵板硬度" />
-                <el-input v-model="state.drilling_speed.data.test_time_sec" placeholder="測試時間 Sec" />
-                <el-input v-model="state.drilling_speed.spec_min" placeholder="下限(可空)" />
-                <el-input v-model="state.drilling_speed.spec_max" placeholder="標準值上限" />
+              <el-input v-db-limit v-model="state.drilling_speed.inspection_method" placeholder="檢驗方式" class="mb-3" />
+              <el-input v-db-limit v-model="state.drilling_speed.data.plate_thickness" placeholder="鐵板厚度" />
+                <el-input v-db-limit v-model="state.drilling_speed.data.plate_hardness" placeholder="鐵板硬度" />
+                <el-input v-db-limit v-model="state.drilling_speed.data.test_time_sec" placeholder="測試時間 Sec" />
+                <el-input v-db-limit v-model="state.drilling_speed.spec_min" placeholder="下限(可空)" />
+                <el-input v-db-limit v-model="state.drilling_speed.spec_max" placeholder="標準值上限" />
                 <el-input-number v-model="state.drilling_speed.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('drilling_speed')" />
                 <div class="flex items-center gap-2">
                   <el-select
@@ -937,7 +937,7 @@
                   class="grid grid-cols-4 gap-2 items-center"
                 >
                   <div>{{ row.sample_no }}</div>
-                  <el-input v-model="row.value" class="test-value-input" />
+                  <el-input v-db-limit v-model="row.value" class="test-value-input" />
                   <div :class="failClass(rowFailByResult(row))">{{ row.result }}</div>
                   <div></div>
                 </div>
@@ -978,10 +978,10 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'torque')">+</el-button>
                 </div>
-                <el-input v-model="state.torque.inspection_method" placeholder="檢驗方式" />
+                <el-input v-db-limit v-model="state.torque.inspection_method" placeholder="檢驗方式" />
                 <el-input-number v-model="state.torque.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('torque')" />
-                <el-input v-model="state.torque.spec_min" placeholder="下限" />
-                <el-input v-model="state.torque.spec_max" placeholder="上限" />
+                <el-input v-db-limit v-model="state.torque.spec_min" placeholder="下限" />
+                <el-input v-db-limit v-model="state.torque.spec_max" placeholder="上限" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.torque.unit"
@@ -1021,7 +1021,7 @@
                   class="grid grid-cols-4 gap-2 items-center"
                 >
                   <div>{{ row.sample_no }}</div>
-                  <el-input v-model="row.value" class="test-value-input" />
+                  <el-input v-db-limit v-model="row.value" class="test-value-input" />
                   <div :class="failClass(rowFailByResult(row))">{{ row.result }}</div>
                   <div></div>
                 </div>
@@ -1068,10 +1068,10 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'coating_thickness')">+</el-button>
               </div>
-              <el-input v-model="state.coating_thickness.inspection_method" placeholder="檢驗方式" />
+              <el-input v-db-limit v-model="state.coating_thickness.inspection_method" placeholder="檢驗方式" />
               <el-input-number v-model="state.coating_thickness.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('coating_thickness')" />
-                <el-input v-model="state.coating_thickness.spec_min" placeholder="標準值下限" />
-                <el-input v-model="state.coating_thickness.spec_max" placeholder="標準值上限" />
+                <el-input v-db-limit v-model="state.coating_thickness.spec_min" placeholder="標準值下限" />
+                <el-input v-db-limit v-model="state.coating_thickness.spec_max" placeholder="標準值上限" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.coating_thickness.unit"
@@ -1107,7 +1107,7 @@
                   class="grid grid-cols-4 gap-2 items-center"
                 >
                   <div>{{ row.sample_no }}</div>
-                  <el-input v-model="row.value" class="test-value-input" />
+                  <el-input v-db-limit v-model="row.value" class="test-value-input" />
                   <div :class="failClass(rowFailByResult(row))">{{ row.result }}</div>
                   <div></div>
                 </div>
@@ -1148,10 +1148,10 @@
                   </el-select>
                   <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drive_torque')">+</el-button>
                 </div>
-                <el-input v-model="state.drive_torque.inspection_method" placeholder="檢驗方式" />
+                <el-input v-db-limit v-model="state.drive_torque.inspection_method" placeholder="檢驗方式" />
                 <el-input-number v-model="state.drive_torque.sample_count" :min="0" :controls="false" class="w-full entry-editable-input" placeholder="檢測數 PCS" @change="syncSectionRowsToCount('drive_torque')" />
-                <el-input v-model="state.drive_torque.spec_min" placeholder="下限" />
-                <el-input v-model="state.drive_torque.spec_max" placeholder="上限" />
+                <el-input v-db-limit v-model="state.drive_torque.spec_min" placeholder="下限" />
+                <el-input v-db-limit v-model="state.drive_torque.spec_max" placeholder="上限" />
                 <div class="flex items-center gap-2">
                   <el-select
                     v-model="state.drive_torque.unit"
@@ -1191,7 +1191,7 @@
                   class="grid grid-cols-4 gap-2 items-center"
                 >
                   <div>{{ row.sample_no }}</div>
-                  <el-input v-model="row.value" class="test-value-input" />
+                  <el-input v-db-limit v-model="row.value" class="test-value-input" />
                   <div :class="failClass(rowFailByResult(row))">{{ row.result }}</div>
                   <div></div>
                 </div>
@@ -1238,7 +1238,7 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'drive_performance')">+</el-button>
               </div>
-              <el-input v-model="state.drive_performance.inspection_method" placeholder="檢驗方式" class="mb-3" />
+              <el-input v-db-limit v-model="state.drive_performance.inspection_method" placeholder="檢驗方式" class="mb-3" />
               <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3 mb-3">
                 <el-input-number
                   v-model="state.drive_performance.sample_count"
@@ -1248,7 +1248,7 @@
                   placeholder="檢測數 PCS"
                   @change="syncSectionRowsToCount('drive_performance')"
                 />
-                <el-input
+                <el-input v-db-limit
                   v-model="state.drive_performance.spec_text"
                   placeholder="標準值"
                 />
@@ -1309,7 +1309,7 @@
                 </el-select>
                 <el-button v-if="isStandardMode" plain @click="openSharedOptionEditor('method_code', 'ductility')">+</el-button>
               </div>
-              <el-input v-model="state.ductility.inspection_method" placeholder="檢驗方式" class="mb-3" />
+              <el-input v-db-limit v-model="state.ductility.inspection_method" placeholder="檢驗方式" class="mb-3" />
               <div class="grid grid-cols-1 xl:grid-cols-[180px_1fr] gap-3 mb-3 items-center">
                 <div class="flex items-center gap-2">
                   <span class="text-sm text-gray-600">檢測數</span>
@@ -1387,7 +1387,7 @@
 
           <div class="space-y-3">
             <div class="flex flex-wrap items-center gap-2">
-              <input
+              <input v-db-limit
                 ref="imageInputRef"
                 type="file"
                 accept="image/*"
@@ -1497,7 +1497,7 @@
     <el-dialog v-model="showTemplatePicker" title="選擇模板" width="760px">
       <div class="space-y-4">
         <div class="flex gap-2">
-          <el-input
+          <el-input v-db-limit
             v-model="templateState.keyword"
             placeholder="搜尋模板代碼 / 模板名稱 / 品名 / 規格"
             @keyup.enter="searchTemplates"
@@ -1555,8 +1555,8 @@
     <el-dialog v-model="sourceState.dialogVisible" title="選擇委託單" width="960px">
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <el-input v-model="sourceState.searchLabNo" placeholder="委託單編號" @keyup.enter="searchSourceForms" />
-          <el-input v-model="sourceState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchSourceForms" />
+          <el-input v-db-limit v-model="sourceState.searchLabNo" placeholder="委託單編號" @keyup.enter="searchSourceForms" />
+          <el-input v-db-limit v-model="sourceState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchSourceForms" />
           <el-date-picker
             v-model="sourceState.searchDate"
             type="date"
@@ -1585,9 +1585,9 @@
     <el-dialog v-model="reportState.dialogVisible" title="載入報告" width="960px">
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <el-input v-model="reportState.searchReportNo" placeholder="報告編號" @keyup.enter="searchReports" />
-          <el-input v-model="reportState.searchEntrustNo" placeholder="委託單編號" @keyup.enter="searchReports" />
-          <el-input v-model="reportState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchReports" />
+          <el-input v-db-limit v-model="reportState.searchReportNo" placeholder="報告編號" @keyup.enter="searchReports" />
+          <el-input v-db-limit v-model="reportState.searchEntrustNo" placeholder="委託單編號" @keyup.enter="searchReports" />
+          <el-input v-db-limit v-model="reportState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchReports" />
           <el-button :loading="reportState.loading" type="primary" @click="searchReports">搜尋</el-button>
         </div>
 
@@ -1633,7 +1633,7 @@
           <div v-if="sharedOptionEditor.sectionLabel" class="text-sm text-slate-500">
             目前欄位：{{ sharedOptionEditor.sectionLabel }}
           </div>
-          <el-input
+          <el-input v-db-limit
             v-model="sharedOptionEditor.input"
             :placeholder="`請輸入${sharedOptionEditor.title}`"
             @keydown.enter.prevent="submitSharedOptionEditor"

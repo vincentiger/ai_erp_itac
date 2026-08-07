@@ -19,7 +19,7 @@
       <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
         <div class="flex-1">
           <div class="text-xs text-gray-500 mb-1">收款編號（receipt_id）</div>
-          <el-input
+          <el-input v-db-limit
             v-model="receiptIdInput"
             placeholder="例如：6"
             inputmode="numeric"
@@ -33,7 +33,7 @@
 
         <div class="flex-1">
           <div class="text-xs text-gray-500 mb-1">分攤備註（先進先出用）</div>
-          <el-input v-model="memoInput" placeholder="例如：收款自動分攤（先進先出）" clearable />
+          <el-input v-db-limit v-model="memoInput" placeholder="例如：收款自動分攤（先進先出）" clearable />
         </div>
 
         <div class="w-full sm:w-auto flex gap-2">
@@ -118,7 +118,7 @@
         <el-table-column label="沖帳金額" width="200">
           <template #default="{ row }">
             <div class="flex gap-2 items-center">
-              <el-input
+              <el-input v-db-limit
                 v-model="applyAmountMap[row.ar_id]"
                 placeholder="金額"
                 inputmode="decimal"
@@ -179,7 +179,7 @@
         <el-table-column label="反沖" width="260">
           <template #default="{ row }">
             <div class="flex gap-2 items-center">
-              <el-input
+              <el-input v-db-limit
                 v-model="unapplyAmountMap[row.apply_id]"
                 placeholder="不填=全反沖"
                 inputmode="decimal"
@@ -209,7 +209,7 @@
         <div class="text-sm text-gray-600">
           目前未分攤：<b>{{ receipt?.unapplied_amount ?? '-' }}</b>
         </div>
-        <el-input v-model="fifoAmountInput" placeholder="例如：500" inputmode="decimal" />
+        <el-input v-db-limit v-model="fifoAmountInput" placeholder="例如：500" inputmode="decimal" />
         <div class="text-xs text-gray-500">
           * 分攤總額會交由後端程序依先進先出規則，自動分攤到同幣別、同客戶的「未沖帳項目」
         </div>

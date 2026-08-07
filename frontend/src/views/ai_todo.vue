@@ -33,7 +33,7 @@
           <div class="font-semibold">
             優先清單（共 {{ rows.length }} 筆）
           </div>
-          <el-input v-model="kw" placeholder="搜尋：客戶/PI/業務/產品" clearable style="width:260px" />
+          <el-input v-db-limit v-model="kw" placeholder="搜尋：客戶/PI/業務/產品" clearable style="width:260px" />
         </div>
       </template>
 

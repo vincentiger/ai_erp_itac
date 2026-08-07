@@ -87,7 +87,7 @@
                         <div><strong>lab_no:</strong> {{ form.lab_no || '-' }}</div>
                       </div>
                     </template>
-                    <el-input v-model="form.lab_no" readonly />
+                    <el-input v-db-limit v-model="form.lab_no" readonly />
                   </el-tooltip>
                 </el-form-item>
                 </el-form>
@@ -96,16 +96,16 @@
             <el-card shadow="never">
               <template #header><div class="font-semibold">3) 委託顧客資訊</div></template>
               <el-form :model="form" label-position="top" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <el-form-item label="委託顧客名稱"><el-input v-model="form.customer_name" /></el-form-item>
-                <el-form-item label="部門單位"><el-input v-model="form.dept" /></el-form-item>
-                <el-form-item label="聯絡人（中/英文姓名）"><el-input v-model="form.contact_name" /></el-form-item>
-                <el-form-item label="聯絡電話"><el-input v-model="form.contact_tel" /></el-form-item>
-                <el-form-item label="傳真"><el-input v-model="form.contact_fax" /></el-form-item>
-                <el-form-item label="E-mail"><el-input v-model="form.contact_email" /></el-form-item>
-                <el-form-item label="顧客統一編號"><el-input v-model="form.tax_id" /></el-form-item>
-                <el-form-item label="聯絡地址"><el-input v-model="form.address" /></el-form-item>
+                <el-form-item label="委託顧客名稱"><el-input v-db-limit v-model="form.customer_name" /></el-form-item>
+                <el-form-item label="部門單位"><el-input v-db-limit v-model="form.dept" /></el-form-item>
+                <el-form-item label="聯絡人（中/英文姓名）"><el-input v-db-limit v-model="form.contact_name" /></el-form-item>
+                <el-form-item label="聯絡電話"><el-input v-db-limit v-model="form.contact_tel" /></el-form-item>
+                <el-form-item label="傳真"><el-input v-db-limit v-model="form.contact_fax" /></el-form-item>
+                <el-form-item label="E-mail"><el-input v-db-limit v-model="form.contact_email" /></el-form-item>
+                <el-form-item label="顧客統一編號"><el-input v-db-limit v-model="form.tax_id" /></el-form-item>
+                <el-form-item label="聯絡地址"><el-input v-db-limit v-model="form.address" /></el-form-item>
                 <el-form-item label="顧客討論紀錄" class="sm:col-span-2">
-                  <el-input v-model="form.discussion" type="textarea" :autosize="{ minRows: 3 }" />
+                  <el-input v-db-limit v-model="form.discussion" type="textarea" :autosize="{ minRows: 3 }" />
                 </el-form-item>
               </el-form>
             </el-card>
@@ -135,7 +135,7 @@
                 </div>
               </el-alert>
               <el-form :model="form" label-position="top" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <el-form-item label="訂單號碼"><el-input v-model="form.order_no" /></el-form-item>
+                <el-form-item label="訂單號碼"><el-input v-db-limit v-model="form.order_no" /></el-form-item>
                 <el-form-item label="材質編號">
                   <div class="flex gap-2 w-full">
                     <el-select
@@ -159,9 +159,9 @@
                   </div>
                 </el-form-item>
                 <el-form-item label="爐號">
-                  <el-input v-model="form.heat_no" />
+                  <el-input v-db-limit v-model="form.heat_no" />
                 </el-form-item>
-                <el-form-item label="製造批號"><el-input v-model="form.lot_no" /></el-form-item>
+                <el-form-item label="製造批號"><el-input v-db-limit v-model="form.lot_no" /></el-form-item>
                 <el-form-item label="產品產量">
                   <div class="flex gap-2 w-full">
                     <el-input-number
@@ -190,10 +190,10 @@
                     </el-select>
                   </div>
                 </el-form-item>
-                <el-form-item label="測試件規格"><el-input v-model="form.sample_spec" /></el-form-item>
+                <el-form-item label="測試件規格"><el-input v-db-limit v-model="form.sample_spec" /></el-form-item>
                 <el-form-item label="Part No.">
                   <div class="flex gap-2 w-full">
-                    <el-input
+                    <el-input v-db-limit
                       v-model="form.part_no"
                       placeholder="輸入後可查前單"
                       @keyup.enter="searchPreviousByPartOrPrint"
@@ -202,7 +202,7 @@
                     <el-button plain :loading="previousLookup.loading" @click="searchPreviousByPartOrPrint">查前單</el-button>
                   </div>
                 </el-form-item>
-                <el-form-item label="測試件品名"><el-input v-model="form.sample_desc" /></el-form-item>
+                <el-form-item label="測試件品名"><el-input v-db-limit v-model="form.sample_desc" /></el-form-item>
                 <el-form-item label="電鍍別">
                   <div class="flex gap-2 w-full">
                     <el-select
@@ -253,7 +253,7 @@
                     <el-radio label="到貴公司收樣">到貴公司收樣</el-radio>
                     <el-radio label="其他">其他</el-radio>
                   </el-radio-group>
-                  <el-input v-if="form.receive_method === '其他'" v-model="form.receive_method_other" class="mt-2" placeholder="請填寫其他方式" />
+                  <el-input v-db-limit v-if="form.receive_method === '其他'" v-model="form.receive_method_other" class="mt-2" placeholder="請填寫其他方式" />
                 </el-form-item>
               </el-form>
             </el-card>
@@ -345,7 +345,7 @@
                           v-if="cate.key === 'mechanical' && ['心部硬度', '表面硬度'].includes(item.name) && isTestItemSelected(cate.key, item.name)"
                           class="mt-2"
                         >
-                          <el-input
+                          <el-input v-db-limit
                             v-model="form.hardness_inspection_standards[hardnessInspectionKey(item.name)]"
                             clearable
                             class="w-full mb-2"
@@ -367,7 +367,7 @@
                         >
                           <div class="mb-1 text-xs font-semibold text-slate-600">標準值</div>
                           <div :class="['carburizing_depth', 'torque'].includes(testStandardKey(item.name)) ? 'grid grid-cols-1 sm:grid-cols-3 gap-2' : 'grid grid-cols-1 sm:grid-cols-2 gap-2'">
-                            <el-input
+                            <el-input v-db-limit
                               v-model="form.test_standard_ranges[testStandardKey(item.name)].min"
                               inputmode="decimal"
                               placeholder="請輸入下限"
@@ -375,7 +375,7 @@
                             >
                               <template #prepend>下限</template>
                             </el-input>
-                            <el-input
+                            <el-input v-db-limit
                               v-model="form.test_standard_ranges[testStandardKey(item.name)].max"
                               inputmode="decimal"
                               placeholder="請輸入上限"
@@ -392,7 +392,7 @@
                               <el-option label="mm" value="mm" />
                               <el-option label="inch" value="inch" />
                             </el-select>
-                            <el-input
+                            <el-input v-db-limit
                               v-else-if="testStandardKey(item.name) === 'torque'"
                               v-model="form.test_standard_ranges[testStandardKey(item.name)].unit"
                               placeholder="請輸入單位"
@@ -407,8 +407,8 @@
                           v-if="cate.key === 'surface' && item.name === '電鍍膜厚' && isTestItemSelected('surface', '電鍍膜厚')"
                           class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2"
                         >
-                          <el-input v-model="form.coating_thickness_spec.min" inputmode="decimal" placeholder="厚度最小值" />
-                          <el-input v-model="form.coating_thickness_spec.max" inputmode="decimal" placeholder="厚度最大值" />
+                          <el-input v-db-limit v-model="form.coating_thickness_spec.min" inputmode="decimal" placeholder="厚度最小值" />
+                          <el-input v-db-limit v-model="form.coating_thickness_spec.max" inputmode="decimal" placeholder="厚度最大值" />
                           <el-select v-model="form.coating_thickness_spec.unit" placeholder="厚度單位">
                             <el-option label="μm" value="μm" />
                             <el-option label="inch" value="inch" />
@@ -419,13 +419,13 @@
                           v-if="cate.key === 'surface' && item.name === '鹽水噴霧' && isTestItemSelected('surface', '鹽水噴霧')"
                           class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
                         >
-                          <el-input v-model="form.salt_spray_spec.white_hours" inputmode="decimal" placeholder="無白鏽標準時數 (H)">
+                          <el-input v-db-limit v-model="form.salt_spray_spec.white_hours" inputmode="decimal" placeholder="無白鏽標準時數 (H)">
                             <template #prepend>白鏽</template>
                           </el-input>
-                          <el-input v-model="form.salt_spray_spec.red_hours" inputmode="decimal" placeholder="無紅鏽標準時數 (H)">
+                          <el-input v-db-limit v-model="form.salt_spray_spec.red_hours" inputmode="decimal" placeholder="無紅鏽標準時數 (H)">
                             <template #prepend>紅鏽</template>
                           </el-input>
-                          <el-input v-model="form.salt_spray_spec.other" class="sm:col-span-2" placeholder="其它鹽霧標準說明" />
+                          <el-input v-db-limit v-model="form.salt_spray_spec.other" class="sm:col-span-2" placeholder="其它鹽霧標準說明" />
                         </div>
                       </div>
                     </div>
@@ -444,7 +444,7 @@
                     <el-radio label="PPAP">PPAP</el-radio>
                     <el-radio label="其它">其它</el-radio>
                   </el-radio-group>
-                  <el-input v-if="form.report.needs === '其它'" v-model="form.report.needs_other" class="mt-2" />
+                  <el-input v-db-limit v-if="form.report.needs === '其它'" v-model="form.report.needs_other" class="mt-2" />
                 </div>
                 <div class="border rounded-xl p-3">
                   <div class="font-semibold mb-2">符合性聲明</div>
@@ -464,7 +464,7 @@
 
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <el-checkbox v-model="form.report.rule_has_drawing">附圖</el-checkbox>
-                    <el-input
+                    <el-input v-db-limit
                       v-model="form.report.rule_drawing"
                       placeholder="圖號 / Print No."
                       @keyup.enter="searchPreviousByPartOrPrint"
@@ -493,7 +493,7 @@
                   </div>
                   <div v-if="form.report.rule_has_drawing" class="mt-3 border-t pt-3">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <input
+                      <input v-db-limit
                         ref="drawingAttachmentInput"
                         type="file"
                         class="hidden"
@@ -525,8 +525,8 @@
                       <el-option label="無" value="無" />
                       <el-option label="有" value="有" />
                     </el-select>
-                    <el-input v-model="form.outsource.items" placeholder="外包項目" :disabled="!isSupervisorUser" />
-                    <el-input v-model="form.outsource.vendor_info" placeholder="外包廠商 / 備註" :disabled="!isSupervisorUser" />
+                    <el-input v-db-limit v-model="form.outsource.items" placeholder="外包項目" :disabled="!isSupervisorUser" />
+                    <el-input v-db-limit v-model="form.outsource.vendor_info" placeholder="外包廠商 / 備註" :disabled="!isSupervisorUser" />
                   </div>
                   <div v-if="!isSupervisorUser" class="mt-2 text-xs text-slate-500">
                     此欄由主管審核時填寫。
@@ -534,7 +534,7 @@
                 </div>
                 <div class="border rounded-xl p-3 sm:col-span-2">
                   <div class="font-semibold mb-2">其他需求</div>
-                  <el-input v-model="form.other_requirements" type="textarea" />
+                  <el-input v-db-limit v-model="form.other_requirements" type="textarea" />
                 </div>
                 <div class="border rounded-xl p-3 sm:col-span-2">
                   <div class="font-semibold mb-2">測試後樣品處理</div>
@@ -640,7 +640,7 @@
           </div>
         </div>
 
-        <el-input
+        <el-input v-db-limit
           v-model="sharedOptionEditor.input"
           :placeholder="`請輸入${sharedOptionEditor.title}`"
           @keydown.enter.prevent="submitSharedOptionEditor"
@@ -673,7 +673,7 @@
             :key="`method-row-${idx}`"
             class="flex items-center gap-2"
           >
-            <el-input
+            <el-input v-db-limit
               v-model="testMethodEditor.methods[idx]"
               :placeholder="`試驗方法 ${idx + 1}`"
             />

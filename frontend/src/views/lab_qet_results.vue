@@ -4,14 +4,14 @@
       <section class="bg-white border border-slate-200 overflow-hidden">
         <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
           <div class="flex flex-wrap items-center gap-2 xl:flex-nowrap">
-            <input
+            <input v-db-limit
               v-model.trim="searchLabNo"
               class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="委託單編號"
               type="text"
               @keyup.enter="applyFilters"
             >
-            <input
+            <input v-db-limit
               v-model.trim="searchCustomer"
               class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="客戶名稱"
@@ -27,7 +27,7 @@
               <option value="FAIL">FAIL</option>
               <option value="PENDING">PENDING</option>
             </select>
-            <input
+            <input v-db-limit
               v-model.trim="searchReviewer"
               class="h-9 w-full min-w-[180px] rounded border border-slate-300 bg-white px-3 text-sm xl:w-[18rem]"
               placeholder="審查人"

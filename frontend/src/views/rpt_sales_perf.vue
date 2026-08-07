@@ -64,7 +64,7 @@
         <div class="font-semibold text-slate-800">業務排行</div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <el-input
+          <el-input v-db-limit
             v-model="kw"
             placeholder="搜尋：業務姓名/ID"
             clearable

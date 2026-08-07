@@ -13,7 +13,7 @@
                <option value="1">已入庫</option>
                <option value="2">未入庫</option>
           </select>
-          <input id="iptData" placeholder="採購單號 / 產品編號 / 進貨單號 / 廠商">
+          <input v-db-limit id="iptData" placeholder="採購單號 / 產品編號 / 進貨單號 / 廠商">
           <button>Go</button><button onclick="$('#selStatus').val('0');$('#iptData').val('')">清除</button>
      </div>
      <div class="divList">

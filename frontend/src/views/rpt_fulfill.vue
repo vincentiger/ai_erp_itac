@@ -31,7 +31,7 @@
       <div class="p-3 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
         <div class="font-semibold text-slate-800">達成率排行</div>
         <div class="flex items-center gap-2 flex-wrap">
-          <el-input v-model="kw" placeholder="搜尋：名稱/ID" clearable style="width: 240px" />
+          <el-input v-db-limit v-model="kw" placeholder="搜尋：名稱/ID" clearable style="width: 240px" />
           <el-select v-model="sortKey" style="width: 200px">
             <el-option label="出貨金額" value="ship_amount_sum" />
             <el-option label="訂單金額" value="order_amount_sum" />

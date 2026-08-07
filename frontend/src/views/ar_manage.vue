@@ -19,7 +19,7 @@
       <div class="flex flex-col sm:flex-row gap-3 sm:items-end">
         <div class="flex-1">
           <div class="text-xs text-gray-500 mb-1">客戶（可不填=全部）</div>
-          <el-input
+          <el-input v-db-limit
             v-model="customerInput"
             placeholder="可輸入：客戶代號 / 客戶名稱 / 客戶簡稱"
             clearable
@@ -234,7 +234,7 @@
 
      <div>
           <div class="text-xs text-gray-500 mb-1">備註</div>
-          <el-input v-model="addReceiptForm.memo" type="textarea" :rows="2" placeholder="匯款/支票號碼/備註" />
+          <el-input v-db-limit v-model="addReceiptForm.memo" type="textarea" :rows="2" placeholder="匯款/支票號碼/備註" />
      </div>
      </div>
 

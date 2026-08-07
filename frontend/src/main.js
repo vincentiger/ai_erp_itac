@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { installGlobalErrorReporter } from './utils/errorReporter'
+import { dbLimitDirective } from './utils/dbField'
 
 // ✅ Element Plus
 import ElementPlus from 'element-plus'
@@ -15,6 +16,7 @@ const app = createApp(App)
 
 app.use(router)
 app.use(ElementPlus)
+app.directive('db-limit', dbLimitDirective)
 
 // 🔑 全域註冊所有 Icons
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

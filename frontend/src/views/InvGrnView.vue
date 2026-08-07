@@ -49,7 +49,7 @@
           <el-option label="未入庫" value="OPEN" />
         </el-select>
 
-        <el-input
+        <el-input v-db-limit
           v-model="kw"
           size="small"
           class="inv-search__kw"
@@ -137,7 +137,7 @@
               />
 
               <!-- ✅ 原生 input：整數 -->
-              <input
+              <input v-db-limit
                 v-model.number="stockEdit.qty"
                 type="number"
                 inputmode="numeric"
@@ -147,7 +147,7 @@
                        focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
 
-              <el-input v-model="stockEdit.memo" size="small" placeholder="備註" class="w-full" />
+              <el-input v-db-limit v-model="stockEdit.memo" size="small" placeholder="備註" class="w-full" />
               <el-button
                 type="primary"
                 size="small"
@@ -217,7 +217,7 @@
                     />
 
                     <!-- ✅ 原生 input：整數 -->
-                    <input
+                    <input v-db-limit
                       v-model.number="stockEdit.qty"
                       type="number"
                       inputmode="numeric"
@@ -227,7 +227,7 @@
                              focus:outline-none focus:ring-1 focus:ring-blue-400"
                     />
 
-                    <el-input v-model="stockEdit.memo" size="small" placeholder="備註" style="flex: 1" />
+                    <el-input v-db-limit v-model="stockEdit.memo" size="small" placeholder="備註" style="flex: 1" />
 
                     <el-button
                       type="primary"
@@ -284,7 +284,7 @@
               <el-option label="採購單號" value="po" />
             </el-select>
 
-            <el-input
+            <el-input v-db-limit
               v-if="queryField !== 'date'"
               v-model="queryText"
               size="small"
@@ -345,7 +345,7 @@
                   </div>
 
                   <!-- ✅ 原生 checkbox（預設不勾） -->
-                  <input
+                  <input v-db-limit
                     type="checkbox"
                     v-model="row.checked"
                     class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
@@ -367,7 +367,7 @@
                   <div class="text-gray-500 text-xs">進貨數量</div>
 
                   <!-- ✅ 原生 input（整數） -->
-                  <input
+                  <input v-db-limit
                     v-model.number="row.recv_qty"
                     type="number"
                     inputmode="numeric"
@@ -392,7 +392,7 @@
           >
             <el-table-column label="選" width="60" align="center">
               <template #default="{ row }">
-                <input
+                <input v-db-limit
                   type="checkbox"
                   v-model="row.checked"
                   class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
@@ -438,7 +438,7 @@
             <el-table-column label="進貨數量" width="140" align="right">
               <template #default="{ row }">
                 <div class="flex justify-end">
-                <input
+                <input v-db-limit
                   :value="row.recv_qty"
                   type="number"
                   inputmode="numeric"

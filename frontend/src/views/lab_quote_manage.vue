@@ -16,37 +16,37 @@
             委託單報價維護
           </div>
           <div class="flex items-center gap-2 flex-wrap justify-end">
-            <input
+            <input v-db-limit
               v-model="searchLabNo"
               class="input-field"
               placeholder="委託編號"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchCustomer"
               class="input-field"
               placeholder="客戶名稱"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchPartNo"
               class="input-field"
               placeholder="Part No."
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchDrawingNo"
               class="input-field"
               placeholder="圖號"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchSampleSpec"
               class="input-field"
               placeholder="尺寸 / 規格"
               @keydown.enter="goFirstPageAndReload"
             />
-            <input
+            <input v-db-limit
               v-model="searchDate"
               type="date"
               class="input-field"

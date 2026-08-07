@@ -93,7 +93,7 @@
           <span class="text-xs text-slate-500">{{ isEditMode ? '編輯模式不可修改' : '可手動輸入，也可依分類自動產生' }}</span>
         </div>
         <div class="mt-2 flex items-center gap-2">
-          <input
+          <input v-db-limit
             data-voice="refno"
             class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-900 font-mono disabled:bg-slate-50"
             v-model.trim="form.refno"
@@ -120,11 +120,11 @@
         <div class="mt-3 space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">公司名稱（最多100字）</label>
-            <input
+            <input v-db-limit
               data-voice="company"
               class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
+              v-bind="companyFieldAttrs"
               v-model.trim="form.company"
-              maxlength="100"
               placeholder="請輸入公司名稱"
               autocomplete="organization"
             />
@@ -132,11 +132,11 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">公司簡稱（最多10字）</label>
-            <input
+            <input v-db-limit
               data-voice="short"
               class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
+              v-bind="shortFieldAttrs"
               v-model.trim="form.short"
-              maxlength="10"
               placeholder="請輸入簡稱"
               autocomplete="off"
             />
@@ -172,7 +172,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">網址</label>
-            <input
+            <input v-db-limit
               data-voice="url"
               class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
               v-model.trim="form.url"
@@ -186,7 +186,7 @@
       <!-- CEO -->
       <section class="mt-4 bg-white rounded-2xl border border-slate-200 p-4">
         <div class="text-sm font-semibold text-slate-900 mb-2">負責人</div>
-        <input
+        <input v-db-limit
           data-voice="ceo"
           class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-300"
           v-model.trim="form.ceo"
@@ -209,7 +209,7 @@
         </div>
 
         <div class="mt-3">
-          <input
+          <input v-db-limit
             data-voice="sales_reps_search"
             class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
             v-model="repKeyword"
@@ -223,7 +223,7 @@
             :key="o.value"
             class="rep-item"
           >
-            <input
+            <input v-db-limit
               type="checkbox"
               class="rep-checkbox"
               :value="String(o.value)"
@@ -349,19 +349,19 @@
           <!-- flags -->
           <div class="chk-grid">
             <label class="chk-card">
-              <input class="chk" type="checkbox" v-model="form.quit" />
+              <input v-db-limit class="chk" type="checkbox" v-model="form.quit" />
               <span class="chk-text">拒絕往來</span>
             </label>
 
             <label class="chk-card">
-              <input class="chk" type="checkbox" v-model="form.secret" />
+              <input v-db-limit class="chk" type="checkbox" v-model="form.secret" />
               <span class="chk-text">自營工廠</span>
             </label>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">統一編號</label>
-            <input
+            <input v-db-limit
               data-voice="LicenceNo"
               class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
               v-model.trim="form.LicenceNo"
@@ -374,7 +374,7 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">信用額度(USD)</label>
-              <input
+              <input v-db-limit
                 data-voice="credit"
                 v-model.number="form.credit"
                 class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
@@ -385,7 +385,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">佣金(%)</label>
-              <input
+              <input v-db-limit
                 data-voice="commission"
                 class="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white"
                 v-model.number="form.commission"
@@ -398,7 +398,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">附註說明</label>
-            <textarea
+            <textarea v-db-limit
               data-voice="remarks"
               class="w-full min-h-[120px] p-4 rounded-xl border border-slate-200 bg-white"
               v-model.trim="form.remarks"
@@ -498,7 +498,7 @@
             <label class="block text-xs font-semibold text-slate-600 mb-1">
               {{ optEditor.mode === 'edit' ? '修改名稱' : '新增名稱' }}
             </label>
-            <input
+            <input v-db-limit
               class="w-full h-11 px-4 rounded-xl border border-slate-200 bg-white"
               v-model.trim="optEditor.input"
               placeholder="輸入項目名稱…"
@@ -567,6 +567,13 @@ import { computed, onMounted, onUnmounted, reactive, ref, nextTick, watch } from
 import { useRouter, useRoute } from 'vue-router'
 import MultiInputCard from '../components/MultiInputCard.vue'
 import { apiFetch } from '@/utils/apiFetch'
+import {
+  buildFieldInputAttrs,
+  clampText,
+  getFieldMaxLength,
+  loadDbContext,
+  normalizeRecordByContext,
+} from '@/utils/dbField'
 
 const API_BASE = '/ai/api'
 const router = useRouter()
@@ -591,6 +598,9 @@ const isEdit = computed(() => !!refno.value)
 const entryFrom = computed(() => String(route.query.from || '').trim().toLowerCase())
 const canDeleteCurrent = computed(() => entryFrom.value === 'customer_del')
 const pendingSalesReps = ref(null)
+const schemaCtx = ref(null)
+const companyFieldAttrs = computed(() => buildFieldInputAttrs(schemaCtx.value, 'company', 100))
+const shortFieldAttrs = computed(() => buildFieldInputAttrs(schemaCtx.value, 'short', 10))
 
 const alert = reactive({
   show: false,
@@ -667,6 +677,13 @@ function applySalesRepsFromCustomer(c) {
   form.sales_reps = Array.from(new Set(mapped.map(s => String(s).trim()).filter(Boolean)))
 }
 
+function setLimitedField(key, value, fallbackMaxLength = null) {
+  const maxLength = getFieldMaxLength(schemaCtx.value, key, fallbackMaxLength)
+  const next = clampText(value, maxLength)
+  if (key in form) form[key] = next
+  return next
+}
+
 function onParentMessage(e) {
   // ✅ 同源才收
   if (e.origin !== window.location.origin) return
@@ -683,7 +700,7 @@ function onParentMessage(e) {
   const srRaw = msg.data?.sales_reps ?? msg.data?.sales_rep ?? msg.data?.sales ?? null
 
   // ✅ 公司
-  if (company) form.company = company
+  if (company) setLimitedField('company', company, 100)
 
   // ✅ 地址（覆蓋第一筆）
   if (address) {
@@ -867,7 +884,7 @@ async function loadCustomer(refno) {
   const j = await r.json().catch(() => ({}))
   if (!r.ok || j?.ok === false) throw new Error(j?.msg || `load failed (${r.status})`)
   const customer = j.data ?? j   // ✅ 這行是關鍵
-  Object.assign(form, customer)
+  Object.assign(form, normalizeRecordByContext(schemaCtx.value, customer))
 
   // ✅ 業務代表 mapping（用 customer）
   applySalesRepsFromCustomer(customer)
@@ -1261,7 +1278,7 @@ function applyVoiceText(key, text) {
   }
 
   // normal text fields
-  if (key in form) form[key] = t
+  if (key in form) setLimitedField(key, t)
 }
 
 function initVoice() {
@@ -1579,6 +1596,8 @@ async function resetForm() {
   })
   options.no2 = []
   repKeyword.value = ''
+  setLimitedField('company', form.company, 100)
+  setLimitedField('short', form.short, 10)
   await applyItacLabDefault()
   showAlert('info', '已清空')
 }
@@ -1599,6 +1618,8 @@ function commitPendingMultiInputs() {
 async function save() {
   alert.show = false
   commitPendingMultiInputs()
+  setLimitedField('company', form.company, 100)
+  setLimitedField('short', form.short, 10)
 
   if (itacLabMode.value && !form.no1) {
     await applyItacLabDefault({ refresh: false })
@@ -1688,8 +1709,15 @@ async function save() {
 ========================= */
 const ctx = ref(null)
 async function loadContext() {
-  const data = await apiGet(`${API_BASE}/customer/meta`)
-  ctx.value = data.data || data
+  const metaPromise = apiGet(`${API_BASE}/customer/meta`)
+  const schemaPromise = loadDbContext('customer_create').catch(err => {
+    console.warn('[customer_create] schema load failed:', err)
+    return null
+  })
+
+  const [metaData, schemaData] = await Promise.all([metaPromise, schemaPromise])
+  ctx.value = metaData.data || metaData
+  schemaCtx.value = schemaData || null
 }
 
 function hydrateOptionsFromContext() {

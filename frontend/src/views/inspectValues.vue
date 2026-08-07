@@ -96,7 +96,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <el-form-item label="報告號碼">
-          <el-input
+          <el-input v-db-limit
             v-model="state.header.form_no"
             placeholder="儲存後自動產生 / 或由後端帶回報告號碼"
             readonly
@@ -104,39 +104,39 @@
         </el-form-item>
 
         <el-form-item label="委託編號">
-          <el-input v-model="state.header.entrust_no" />
+          <el-input v-db-limit v-model="state.header.entrust_no" />
         </el-form-item>
 
         <el-form-item label="Part No.">
-          <el-input v-model="state.header.part_no" />
+          <el-input v-db-limit v-model="state.header.part_no" />
         </el-form-item>
 
         <el-form-item label="品名">
-          <el-input v-model="state.header.product_name" />
+          <el-input v-db-limit v-model="state.header.product_name" />
         </el-form-item>
 
         <el-form-item label="規格">
-          <el-input v-model="state.header.specification" />
+          <el-input v-db-limit v-model="state.header.specification" />
         </el-form-item>
 
         <el-form-item label="鍍別">
-          <el-input v-model="state.header.plating_type" />
+          <el-input v-db-limit v-model="state.header.plating_type" />
         </el-form-item>
 
         <el-form-item label="尺寸依據標準">
-          <el-input v-model="state.header.dimension_standard" />
+          <el-input v-db-limit v-model="state.header.dimension_standard" />
         </el-form-item>
 
         <el-form-item label="圖號">
-          <el-input v-model="state.header.drawing_no" />
+          <el-input v-db-limit v-model="state.header.drawing_no" />
         </el-form-item>
 
         <el-form-item label="法規">
-          <el-input v-model="state.header.regulation" />
+          <el-input v-db-limit v-model="state.header.regulation" />
         </el-form-item>
 
         <el-form-item label="批號">
-          <el-input v-model="state.header.lot_no" />
+          <el-input v-db-limit v-model="state.header.lot_no" />
         </el-form-item>
 
         <el-form-item label="批量">
@@ -144,11 +144,11 @@
         </el-form-item>
 
         <el-form-item label="材質">
-          <el-input v-model="state.header.material" />
+          <el-input v-db-limit v-model="state.header.material" />
         </el-form-item>
 
         <el-form-item label="製造廠商">
-          <el-input v-model="state.header.manufacturer" />
+          <el-input v-db-limit v-model="state.header.manufacturer" />
         </el-form-item>
 
         <el-form-item label="尺寸單位">
@@ -173,7 +173,7 @@
         </el-form-item>
 
         <el-form-item label="抽樣計劃">
-          <el-input v-model="state.header.sampling_plan" />
+          <el-input v-db-limit v-model="state.header.sampling_plan" />
         </el-form-item>
 
         <el-form-item label="測試日期">
@@ -228,7 +228,7 @@
         </el-form-item>
 
         <el-form-item label="審查者">
-          <el-input v-model="state.header.reviewer" readonly />
+          <el-input v-db-limit v-model="state.header.reviewer" readonly />
         </el-form-item>
 
         <el-form-item label="總判定">
@@ -242,7 +242,7 @@
 
       <div class="mt-3">
         <el-form-item label="備註">
-          <el-input v-model="state.header.remarks" type="textarea" :rows="2" />
+          <el-input v-db-limit v-model="state.header.remarks" type="textarea" :rows="2" />
         </el-form-item>
       </div>
     </el-card>
@@ -333,7 +333,7 @@
           <!-- 項目基本資訊 -->
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
             <el-form-item :label="isAppearanceItem(currentItem) ? '依據標準' : '標準值'">
-              <el-input
+              <el-input v-db-limit
                 v-if="isFinishItem(currentItem)"
                 v-model="currentItem.std_value"
                 placeholder="請手動輸入表面處理標準"
@@ -348,12 +348,12 @@
               >
                 <el-option :label="APPEARANCE_STANDARD" :value="APPEARANCE_STANDARD" />
               </el-select>
-              <el-input v-else v-model="currentItem.std_value" placeholder="由下方標準值輔助帶入" readonly />
+              <el-input v-db-limit v-else v-model="currentItem.std_value" placeholder="由下方標準值輔助帶入" readonly />
             </el-form-item>
 
             <el-form-item v-if="!isAppearanceItem(currentItem) && !isFinishItem(currentItem)" label="標準值輔助" class="xl:col-span-2">
               <div class="flex gap-2 w-full standard-helper">
-                <el-input
+                <el-input v-db-limit
                   v-model="currentItem.std_min"
                   :placeholder="isRefStandardUnit(currentItem.std_unit) ? 'REF 設定值' : '最小值'"
                   inputmode="decimal"
@@ -361,7 +361,7 @@
                   @input="handleStandardMinInput(currentItem)"
                   @blur="normalizeStandardAngle(currentItem)"
                 />
-                <el-input
+                <el-input v-db-limit
                   v-if="!isDiscreteStandardUnit(currentItem.std_unit)"
                   v-model="currentItem.std_max"
                   placeholder="最大值"
@@ -394,12 +394,12 @@
 
             <el-form-item label="實測值">
               <div :class="['rounded-lg', currentItem.result === 'FAIL' ? 'fail-actual-box' : '']">
-                <el-input v-model="currentItem.actual_value" placeholder="輸入量測值後自動彙整" readonly />
+                <el-input v-db-limit v-model="currentItem.actual_value" placeholder="輸入量測值後自動彙整" readonly />
               </div>
             </el-form-item>
 
             <el-form-item label="量具／編號">
-              <el-input v-model="currentItem.gauge_no" clearable placeholder="請輸入本項量具／編號" />
+              <el-input v-db-limit v-model="currentItem.gauge_no" clearable placeholder="請輸入本項量具／編號" />
             </el-form-item>
 
             <el-form-item label="檢驗數">
@@ -413,13 +413,13 @@
 
             <el-form-item label="最小值 / 最大值">
               <div class="flex gap-2 w-full">
-                <el-input
+                <el-input v-db-limit
                   v-model="currentItem.min_value"
                   placeholder="最小值"
                   inputmode="decimal"
                   readonly
                 />
-                <el-input
+                <el-input v-db-limit
                   v-model="currentItem.max_value"
                   placeholder="最大值"
                   inputmode="decimal"
@@ -440,7 +440,7 @@
             </div>
 
             <div class="flex flex-col gap-2">
-              <el-input
+              <el-input v-db-limit
                 v-model="currentItem.pasteText"
                 type="textarea"
                 :rows="4"
@@ -481,7 +481,7 @@
                   <el-option label="OK" value="OK" />
                   <el-option label="NG" value="NG" />
                 </el-select>
-                <el-input
+                <el-input v-db-limit
                   v-else
                   v-model="currentItem.measurements[i]"
                   inputmode="decimal"
@@ -537,8 +537,8 @@
     <el-dialog v-model="sourceState.dialogVisible" title="選擇委託單" width="960px">
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <el-input v-model="sourceState.searchLabNo" placeholder="委託單編號" @keyup.enter="searchSourceForms" />
-          <el-input v-model="sourceState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchSourceForms" />
+          <el-input v-db-limit v-model="sourceState.searchLabNo" placeholder="委託單編號" @keyup.enter="searchSourceForms" />
+          <el-input v-db-limit v-model="sourceState.searchCustomer" placeholder="客戶名稱" @keyup.enter="searchSourceForms" />
           <el-date-picker
             v-model="sourceState.searchDate"
             type="date"

@@ -2372,7 +2372,11 @@ async function selectSourceForm(formId) {
         sourceState.dialogVisible = false
         router.replace({
           name: routeName.value,
-          query: { report_id: saved.report_id, source_form_id: formId }
+          query: {
+            ...route.query,
+            report_id: saved.report_id,
+            source_form_id: formId
+          }
         })
         ElMessage.success('已載入既有機械性質資料')
         return

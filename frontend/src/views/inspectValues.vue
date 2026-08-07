@@ -1670,7 +1670,11 @@ async function selectSourceForm(formId) {
     sourceState.dialogVisible = false
     router.replace({
       name: 'lab_qet',
-      query: { form_id: saved.form_id, source_form_id: formId }
+      query: {
+        ...route.query,
+        form_id: saved.form_id,
+        source_form_id: formId,
+      }
     })
     ElMessage.success('已載入既有尺寸表資料')
   } catch (e) {
@@ -1777,7 +1781,10 @@ function newForm(force = false) {
   }
   router.replace({
     name: 'lab_qet',
-    query: keepSource.sourceFormId ? { source_form_id: keepSource.sourceFormId } : {}
+    query: {
+      ...route.query,
+      ...(keepSource.sourceFormId ? { source_form_id: keepSource.sourceFormId } : {})
+    }
   })
   ElMessage.success('已建立新表單')
 }

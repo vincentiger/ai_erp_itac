@@ -1011,7 +1011,7 @@ async function selectSourceForm(formId) {
     router.replace({
       name: 'lab_qet_standard',
       query: saved?.form_id
-        ? { form_id: saved.form_id, source_form_id: formId }
+        ? { ...route.query, form_id: saved.form_id, source_form_id: formId }
         : { ...route.query, source_form_id: formId }
     })
     ElMessage.success(saved?.form_id ? '已載入既有尺寸表設定' : '已帶入委託單資料')

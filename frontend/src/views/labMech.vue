@@ -2294,25 +2294,7 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
   state.hydrogen.data.sample_count = hydrogenSource.sample_count ?? values.sample_qty ?? state.hydrogen.data.sample_count
 
   applyDefaultHeaderValues()
-  state.header.remarks = [
-    `來源委託單 ${values.lab_no || ''}`,
-    values.customer_name ? `客戶 ${values.customer_name}` : '',
-    values.contact_name ? `聯絡人 ${values.contact_name}` : '',
-    values.contact_tel ? `電話 ${values.contact_tel}` : '',
-    values.contact_email ? `E-mail ${values.contact_email}` : '',
-    values.tests?.mechanical?.length ? `機械項目 ${values.tests.mechanical.join('、')}` : '',
-    values.tests?.functional?.length ? `功能項目 ${values.tests.functional.join('、')}` : '',
-    values.tests?.surface?.length ? `表面項目 ${values.tests.surface.join('、')}` : '',
-    values.test_methods?.mechanical ? `機械方法 ${values.test_methods.mechanical}` : '',
-    values.test_methods?.functional ? `功能方法 ${values.test_methods.functional}` : '',
-    values.test_methods?.surface ? `表面方法 ${values.test_methods.surface}` : '',
-    values.production_qty != null ? `產品產量 ${Number(values.production_qty).toLocaleString()} ${values.production_unit || 'PCS'}` : '',
-    values.sample_qty != null ? `送驗數量 ${Number(values.sample_qty).toLocaleString()} ${values.sample_unit || 'PCS'}` : '',
-    saltSpec.white_hours ? `鹽霧無白鏽 ${saltSpec.white_hours} H` : '',
-    saltSpec.red_hours ? `鹽霧無紅鏽 ${saltSpec.red_hours} H` : '',
-    saltSpec.other ? `鹽霧其它 ${saltSpec.other}` : '',
-    values.other_requirements ? `其他需求 ${values.other_requirements}` : '',
-  ].filter(Boolean).join('\n')
+  state.header.remarks = ''
 }
 
 function syncSourceStateFromValues(values = {}, sourceFormId = '') {

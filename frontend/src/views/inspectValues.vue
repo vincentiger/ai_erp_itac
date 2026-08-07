@@ -1614,31 +1614,7 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
   state.header.test_date = sourceFilledDate || state.header.test_date
   state.header.completed_date = sourceFilledDate || state.header.completed_date
   state.header.filled_date = sourceFilledDate
-  state.header.remarks = [
-    `來源委託單 ${values.lab_no || ''}`,
-    values.customer_name ? `客戶 ${values.customer_name}` : '',
-    values.contact_name ? `聯絡人 ${values.contact_name}` : '',
-    values.contact_tel ? `電話 ${values.contact_tel}` : '',
-    values.contact_email ? `E-mail ${values.contact_email}` : '',
-    values.material_no ? `材質編號 ${values.material_no}` : '',
-    values.platingCate ? `電鍍別 ${values.platingCate}` : '',
-    values.platingFac ? `廠商 ${values.platingFac}` : '',
-    receiveMethod ? `收件方式 ${receiveMethod}` : '',
-    sampleQty != null ? `送驗數量 ${formatSourceQuantity(sampleQty, values.sample_unit)}` : '',
-    productionQty != null ? `產品產量 ${formatSourceQuantity(productionQty, values.production_unit)}` : '',
-    values.tests?.dimension?.length ? `尺寸項目 ${values.tests.dimension.join('、')}` : '',
-    dimensionMethods ? `尺寸方法 ${dimensionMethods}` : '',
-    values.hardness_inspection_methods?.core ? `心部硬度檢測方式 ${values.hardness_inspection_methods.core}` : '',
-    values.hardness_inspection_methods?.surface ? `表面硬度檢測方式 ${values.hardness_inspection_methods.surface}` : '',
-    values.coating_thickness_spec?.min || values.coating_thickness_spec?.max
-      ? `膜厚標準 ${values.coating_thickness_spec.min || '-'} - ${values.coating_thickness_spec.max || '-'} ${values.coating_thickness_spec.unit || ''}`.trim()
-      : '',
-    values.salt_spray_spec?.white_hours ? `鹽霧無白鏽 ${values.salt_spray_spec.white_hours} H` : '',
-    values.salt_spray_spec?.red_hours ? `鹽霧無紅鏽 ${values.salt_spray_spec.red_hours} H` : '',
-    discussion ? `討論事項 ${discussion}` : '',
-    outsource.has && outsource.has !== '無' ? `委外資訊 ${[outsource.items, outsource.vendor_info].filter(Boolean).join(' / ')}` : '',
-    values.other_requirements ? `其他需求 ${values.other_requirements}` : '',
-  ].filter(Boolean).join('\n')
+  state.header.remarks = ''
 
   if (sampleQty != null) {
     state.header.sampling_plan = `送驗數量 ${formatSourceQuantity(sampleQty, values.sample_unit)}`

@@ -336,8 +336,10 @@ const handleMenuClick = (targetName, title = null) => {
   const APP_BASE = import.meta.env.BASE_URL || '/ai/'
   const ORIGIN = window.location.origin
   const formattedBase = APP_BASE.endsWith('/') ? APP_BASE : `${APP_BASE}/`
+  const reloadToken = String(Date.now())
+  const joiner = routePath.includes('?') ? '&' : '?'
 
-  currentUrl.value = `${ORIGIN}${formattedBase}#${routePath}`
+  currentUrl.value = `${ORIGIN}${formattedBase}#${routePath}${joiner}__reload=${reloadToken}`
 
   console.log('導航至 URL:', currentUrl.value)
 

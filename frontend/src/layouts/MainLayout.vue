@@ -74,7 +74,11 @@
       <el-main class="!p-0 min-w-0">
         <!-- subtle background like ChatGPT -->
         <div class="h-full min-h-0 bg-slate-50">
-          <router-view />
+          <router-view v-slot="{ Component, route }">
+            <keep-alive>
+              <component :is="Component" :key="route.name || route.path" />
+            </keep-alive>
+          </router-view>
         </div>
       </el-main>
     </el-container>

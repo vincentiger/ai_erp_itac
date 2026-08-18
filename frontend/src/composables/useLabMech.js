@@ -598,7 +598,7 @@ export function useLabMech() {
       complete_date: '',
       tester: '',
       reviewer: '',
-      remarks: template.remarks || '',
+      remarks: '',
     })
 
     for (const section of testSections.value) {

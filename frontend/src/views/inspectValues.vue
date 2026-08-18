@@ -1775,9 +1775,6 @@ function newForm(force = false) {
     state.header.specification = keepSource.sampleSpec || state.header.specification
     state.header.material = keepSource.materialNo || state.header.material
     state.header.lot_no = keepSource.lotNo || state.header.lot_no
-    state.header.remarks = keepSource.customerName
-      ? `來源委託單 ${keepSource.labNo}\n客戶 ${keepSource.customerName}`
-      : ''
   }
   router.replace({
     name: 'lab_qet',

@@ -10,6 +10,7 @@ import {
   exportLabMechDocx,
   downloadLabMechDocx,
 } from '@/utils/labMech'
+import { clampLabMechHeader } from '@/utils/labMechLimits'
 
 import {
   fetchLabMechTemplates,
@@ -581,24 +582,26 @@ export function useLabMech() {
     state.reportId = null
 
     Object.assign(state.header, {
-      report_no: '',
-      entrust_no: '',
-      product_name: template.product_name || '',
-      spec_desc: template.spec_desc || '',
-      lot_no: '',
-      lot_qty: null,
-      plating: template.plating || '',
-      material: template.material || '',
-      manufacturer: '',
-      standard_type: template.standard_type || '',
-      standard_desc: template.standard_desc || '',
-      env_temp: null,
-      env_humidity: null,
-      test_date: '',
-      complete_date: '',
-      tester: '',
-      reviewer: '',
-      remarks: '',
+      ...clampLabMechHeader({
+        report_no: '',
+        entrust_no: '',
+        product_name: template.product_name || '',
+        spec_desc: template.spec_desc || '',
+        lot_no: '',
+        lot_qty: null,
+        plating: template.plating || '',
+        material: template.material || '',
+        manufacturer: '',
+        standard_type: template.standard_type || '',
+        standard_desc: template.standard_desc || '',
+        env_temp: null,
+        env_humidity: null,
+        test_date: '',
+        complete_date: '',
+        tester: '',
+        reviewer: '',
+        remarks: '',
+      }),
     })
 
     for (const section of testSections.value) {
@@ -669,14 +672,14 @@ export function useLabMech() {
   async function createNewReportFromTemplate(templateId) {
     try {
       const r = await createReportFromTemplate(templateId, {
-        header: {
+        header: clampLabMechHeader({
           product_name: state.header.product_name,
           spec_desc: state.header.spec_desc,
           plating: state.header.plating,
           material: state.header.material,
           standard_type: state.header.standard_type,
           standard_desc: state.header.standard_desc,
-        },
+        }),
       })
 
       if (!r.ok) throw new Error(r.msg || '由模板建立報告失敗')
@@ -840,7 +843,7 @@ export function useLabMech() {
 
   function buildPayload() {
     return {
-      header: { ...state.header },
+      header: clampLabMechHeader(state.header),
       items: testSections.value.map(section => {
         const base = {
           test_code: section.test_code,

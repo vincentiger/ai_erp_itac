@@ -1660,6 +1660,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLabMech } from '@/composables/useLabMech'
 import { apiFetch } from '@/utils/apiFetch'
 import { fetchLabMechImages, uploadLabMechImages, deleteLabMechImage } from '@/utils/labMech'
+import { clampLabMechHeader } from '@/utils/labMechLimits'
 
 const props = defineProps({
   standardMode: {
@@ -2294,6 +2295,7 @@ function applySourceToHeader(values = {}, sourceFormId = '') {
   state.hydrogen.data.sample_count = hydrogenSource.sample_count ?? values.sample_qty ?? state.hydrogen.data.sample_count
 
   applyDefaultHeaderValues()
+  Object.assign(state.header, clampLabMechHeader(state.header))
   state.header.remarks = ''
 }
 

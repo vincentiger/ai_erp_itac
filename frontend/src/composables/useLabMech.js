@@ -619,7 +619,7 @@ export function useLabMech() {
         method_code: item.method_code || '',
         inspection_method: item.inspection_method || '',
         unit: item.unit || '',
-        sample_count: item.sample_count,
+        sample_count: item.sample_count ?? target.sample_count,
         spec_min: item.spec_min,
         spec_max: item.spec_max,
         spec_text: normalizeSpecText(key, item.spec_text),
@@ -637,6 +637,7 @@ export function useLabMech() {
       if (item.rows) {
         target.rows = JSON.parse(JSON.stringify(item.rows))
       }
+      syncSectionRowsToCount(key)
     }
 
     updateHardnessPreview(state.core_hardness)
@@ -981,7 +982,7 @@ export function useLabMech() {
           method_code: item.method_code || '',
           inspection_method: item.inspection_method || '',
           unit: item.unit || '',
-          sample_count: item.sample_count,
+          sample_count: item.sample_count ?? target.sample_count,
           spec_min: item.spec_min,
           spec_max: item.spec_max,
           spec_text: normalizeSpecText(key, item.spec_text),
@@ -1001,6 +1002,7 @@ export function useLabMech() {
           }
         }
         if (item.rows) target.rows = JSON.parse(JSON.stringify(item.rows))
+        syncSectionRowsToCount(key)
       }
 
       setVisibleSectionsFromReportItems(report.items || [])

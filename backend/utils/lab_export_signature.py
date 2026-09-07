@@ -187,7 +187,15 @@ def _signature_check(form_id: str, kind: str = "manager") -> Dict:
         if required
         else ""
     )
-    path = _find_signature({**values, "manager_signature_file": filename}) if filename else None
+    signature_values = {
+        **values,
+        "manager_signature_file": filename,
+        "approval": {
+            **(values.get("approval") or {}),
+            "manager_signature_file": filename,
+        },
+    }
+    path = _find_signature(signature_values) if filename else None
     return {
         "required": required,
         "filename": filename,

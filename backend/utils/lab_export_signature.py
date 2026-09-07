@@ -44,6 +44,24 @@ def _find_signature(values: Dict) -> Optional[Path]:
     return next((root / filename for root in _signature_roots() if (root / filename).is_file()), None)
 
 
+def _load_department_manager_filename() -> str:
+    conn = current_app.config["GET_DB_CONN"]()
+    try:
+        row = conn.cursor().execute(
+            """
+SELECT TOP 1 ISNULL(sign_e, sign_c) AS signature
+  FROM dbo.staff
+ WHERE ISNULL(dep_manager, 0) = 1
+ ORDER BY id
+"""
+        ).fetchone()
+        reference = str(row[0] or "").strip() if row else ""
+        reference = reference.split("?", 1)[0].split("#", 1)[0].replace("\\", "/")
+        return os.path.basename(reference)
+    finally:
+        conn.close()
+
+
 def _load_form_values(form_id: str) -> Dict:
     conn = current_app.config["GET_DB_CONN"]()
     try:
@@ -156,15 +174,19 @@ def _requires_manager_signature(values: Dict) -> bool:
     )
 
 
-def _signature_check(form_id: str) -> Dict:
+def _signature_check(form_id: str, kind: str = "manager") -> Dict:
     values = _load_form_values(form_id)
     workflow = _load_workflow_state(form_id)
     if workflow.get("workflow_status") in {"RECEIVED_LOGO", "RECEIVED_NOLOGO", "REVIEW_DONE"}:
         values = {**values, "status_code": workflow["workflow_status"]}
-    if workflow.get("workflow_status") == "REVIEW_DONE":
-        values = {**values, "manager_signature_file": DEFAULT_MANAGER_SIGNATURE_FILENAME}
-    required = _requires_manager_signature(values)
-    filename = _signature_filename(values) if required else ""
+    required = True if kind == "fixed" else _requires_manager_signature(values)
+    filename = (
+        DEFAULT_MANAGER_SIGNATURE_FILENAME
+        if kind == "fixed" and required
+        else _load_department_manager_filename()
+        if required
+        else ""
+    )
     path = _find_signature({**values, "manager_signature_file": filename}) if filename else None
     return {
         "required": required,
@@ -174,10 +196,14 @@ def _signature_check(form_id: str) -> Dict:
     }
 
 
-def validate_manager_signature(form_id: str) -> Dict:
-    """Check the signature before an export builder creates a Word file."""
-    result = _signature_check(form_id)
+def validate_export_signature(form_id: str, kind: str = "manager") -> Dict:
+    """Check the selected signature before an export builder creates a Word file."""
+    result = _signature_check(form_id, kind)
     if result["required"] and not result["path"]:
+        if not result["filename"]:
+            raise FileNotFoundError(
+                "找不到 staff.dep_manager=1 員工的 sign_e/sign_c 簽名檔"
+            )
         checked = ", ".join(result["checked"])
         raise FileNotFoundError(
             f"主管簽名檔尚未設定或不存在：{result['filename']}；已檢查：{checked}"
@@ -231,7 +257,8 @@ def install_lab_export_signature(module, builder_name: str = "_make_export_docx"
         return
 
     def wrapped(form_id: str) -> Dict:
-        signature_check = validate_manager_signature(form_id)
+        kind = "fixed" if module.__name__.endswith("lab_final_report") or builder_name == "_build_final_report" else "manager"
+        signature_check = validate_export_signature(form_id, kind)
         result = original(form_id)
         values = _load_form_values(form_id)
         if module.__name__.endswith("lab_forms") and builder_name == "_make_export_docx":

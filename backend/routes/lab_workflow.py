@@ -6,7 +6,7 @@ from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
-from utils.lab_export_signature import validate_manager_signature
+from utils.lab_export_signature import validate_export_signature
 
 try:
     from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
@@ -337,9 +337,7 @@ def get_form_status():
 @bp.get("/workflow/current-signature")
 @jwt_required()
 def current_signature():
-    # The laboratory report is approved by the configured supervisor, not
-    # necessarily by the account that happens to export it (for example sys).
-    account = _safe_str(os.getenv("LAB_SUPERVISOR_ACCOUNT") or "Charles-ch")
+    # Always use the department manager's signature, not the exporting account.
 
     conn = None
     try:
@@ -349,13 +347,13 @@ def current_signature():
         cur.execute(
             """
             SELECT TOP 1
-                   ISNULL(sign_c, sign_e) AS signature,
+                   ISNULL(sign_e, sign_c) AS signature,
                    sign_c,
                    sign_e
             FROM dbo.staff
-            WHERE LTRIM(RTRIM(ISNULL(eid, ''))) = ?
+            WHERE ISNULL(dep_manager, 0) = 1
+            ORDER BY id
             """,
-            (account,),
         )
         row = cur.fetchone()
         signature = ""
@@ -386,7 +384,7 @@ def current_signature():
                 "ok": True,
                 "data": {
                     "signature": signature,
-                    "account": account,
+                    "account": "dep_manager=1",
                     "filename": filename,
                     "path": resolved,
                     "public_path": f"/pic/itac/{filename}",
@@ -408,7 +406,7 @@ def current_signature():
 def signature_check(form_id):
     """Preflight the fixed supervisor signature before Word export."""
     try:
-        result = validate_manager_signature(_safe_str(form_id))
+        result = validate_export_signature(_safe_str(form_id), "manager")
         return jsonify({"ok": True, "data": result})
     except FileNotFoundError as exc:
         return jsonify({"ok": False, "code": "MANAGER_SIGNATURE_MISSING", "msg": str(exc)}), 409
@@ -530,6 +528,18 @@ def update_form_status():
                 (form_id,),
             )
         elif status == "REVIEW_DONE":
+            cur.execute(
+                """
+                SELECT TOP 1 ISNULL(sign_e, sign_c) AS signature
+                  FROM dbo.staff
+                 WHERE ISNULL(dep_manager, 0) = 1
+                 ORDER BY id
+                """
+            )
+            manager_row = cur.fetchone()
+            manager_signature = os.path.basename(
+                _safe_str(manager_row[0]).split("?", 1)[0].split("#", 1)[0].replace("\\", "/")
+            ) if manager_row else ""
             if not current_report_no:
                 report_key = "LAB_REPORT_LOGO" if has_logo else "LAB_REPORT_NOLOGO"
                 report_period = _now_ym() if has_logo else _now_ymd()
@@ -553,7 +563,7 @@ def update_form_status():
                        workflow_signature_date = ISNULL(workflow_signature_date, CONVERT(date, GETDATE()))
                  WHERE CONVERT(varchar(36), form_id) = ?
                 """,
-                ("Eeid_Charles-ch.jpg", form_id),
+                (manager_signature or None, form_id),
             )
         conn.commit()
         return jsonify({"ok": True, "data": {"form_id": form_id, "status": status, "has_logo": has_logo}})

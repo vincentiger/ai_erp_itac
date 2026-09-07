@@ -11,7 +11,8 @@
 - 一登入就先抓取登入者簽名檔
 - 依狀態自動帶入簽名檔與日期
 - 依 `有 logo / 無 logo` 與流程階段自動產生不同編號
-- 報告輸出時由系統自動附上 Charles 固定主管簽名，不要求主管另行上傳
+- 委託單匯出時自動抓取 `staff.dep_manager = 1` 員工簽名，不要求上傳
+- 客戶報告匯出時使用固定 Charles 簽名檔
 
 ## 二、流程定義
 
@@ -99,7 +100,7 @@ select isnull(sign_e, sign_c) as signature from staff
 
 `C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg`
 
-匯出前先檢查固定檔案是否存在；不存在時先警告並停止匯出，不得先產生 Word 再失敗。
+客戶報告匯出前先檢查固定檔案是否存在；不存在時先警告並停止匯出，不得先產生 Word 再失敗。委託單匯出則檢查 `staff.dep_manager = 1` 員工的簽名檔。
 
 ## 五、後端 API 規格
 
@@ -209,7 +210,7 @@ select isnull(sign_e, sign_c) as signature from staff
 #### 選項 4
 
 - 標記主管審核完成
-- 於報告匯出時帶入 Charles 固定簽名
+- 於客戶報告匯出時帶入 Charles 固定簽名
 - 產生報告號
 
 ### 7.3 UI 顯示規則
@@ -247,7 +248,7 @@ select isnull(sign_e, sign_c) as signature from staff
 匯出報告時：
 
 - 若狀態為 `REVIEW_DONE`
-- 需在 Word 報告中插入 Charles 固定簽名
+- 客戶報告需在 Word 中插入 Charles 固定簽名；委託單 Word 則插入 `staff.dep_manager = 1` 員工簽名
 
 ## 九、驗收條件
 

@@ -39,7 +39,7 @@ T20260715-001
 當委託單進入收到樣品並確認階段時，需同時符合：
 
 - 主管審核勾選
-- 系統自動帶入 Charles 固定簽名檔
+- 系統自動抓取 `staff.dep_manager = 1` 員工的簽名檔（優先 `sign_e`，其次 `sign_c`）
 - 已勾選是否有 logo
 
 此階段要產生正式委託編號。
@@ -164,15 +164,15 @@ R20260715-001
 當狀態選到 `4).主管審核完成`，儲存時要自動：
 
 - 寫入當天日期到 `已審核日期`
-- 帶入 Charles 固定簽名檔，不要求使用者另外上傳主管簽名
+- 自動抓取 `staff.dep_manager = 1` 員工的簽名檔，不要求使用者上傳主管簽名
 
-Charles 簽名檔路徑：
+主管簽名檔路徑：
 
 ```text
-C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
+C:\inetpub\wwwroot\newweb2021\pic\itac\{staff.sign_e 或 staff.sign_c}
 ```
 
-匯出前必須先檢查上述檔案是否存在。若不存在，系統要先顯示警告並停止匯出，訊息需包含實際檢查路徑；不可等 Word 產生後才以例外失敗。
+匯出前必須先檢查該主管簽名檔是否存在。若不存在，系統要先顯示警告並停止匯出，訊息需包含實際檢查路徑；不可要求使用者上傳替代檔案。
 
 ## 9. 目前實作現況
 
@@ -193,8 +193,8 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
 - 新單只顯示 `臨時`
 - 狀態切換時立即提示「儲存後，委託單編號即依新狀態自動產生」
 - 主管可見的狀態列固定在底部，不跟著主卷軸移動
-- `4` 狀態時自動寫入 `已審核日期` 與 Charles 簽名檔
-- `4` 狀態不需要上傳主管簽名，匯出前自動檢查 Charles 固定簽名檔
+- `4` 狀態時自動寫入 `已審核日期` 與 `dep_manager = 1` 員工簽名檔
+- `4` 狀態不需要上傳主管簽名，匯出前自動檢查 `dep_manager = 1` 員工的簽名檔
 - 編號顯示改為前端依規格即時計算，不再依賴舊的預覽 API
 
 ## 10. 建議後續實作方式
@@ -205,7 +205,7 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
   - `lab_no`
   - `report_no`
   - `已審核日期`
-  - `Charles` 簽名檔引用
+  - `staff.sign_e` / `staff.sign_c` 簽名檔引用
 
 ## 11. 已落地到前端的規則
 
@@ -214,8 +214,8 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
 - 選單變更時顯示警語
 - `1` 使用臨時編號前綴
 - `2 / 3` 依 logo 狀態產生正式編號前綴
-- `4` 時自動寫入主管審核日期與 Charles 簽名檔
-- 匯出前若 Charles 簽名檔不存在，先警告且不產生 Word
+- `4` 時自動寫入主管審核日期與 `dep_manager = 1` 員工簽名檔
+- 匯出前若主管簽名檔不存在，先警告且不產生 Word
 
 ## 12. 目前落地的更精準編號規則
 
@@ -314,7 +314,7 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
 - 新單只顯示 `臨時`
 - 狀態切換時立即提示「儲存後，委託單編號即依新狀態自動產生」
 - 主管可見的狀態列固定在底部，不跟著主卷軸移動
-- `4` 狀態時自動寫入 `已審核日期` 與 Charles 簽名檔
+- `4` 狀態時自動寫入 `已審核日期` 與 `dep_manager = 1` 員工簽名檔
 - 編號顯示改為前端依規格即時計算，不再依賴舊的預覽 API
 
 ## 10. 建議後續實作方式
@@ -325,7 +325,7 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
   - `lab_no`
   - `report_no`
   - `已審核日期`
-  - `Charles` 簽名檔引用
+  - `staff.sign_e` / `staff.sign_c` 簽名檔引用
 
 ## 11. 已落地到前端的規則
 
@@ -334,7 +334,7 @@ C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg
 - 選單變更時顯示警語
 - `1` 使用臨時編號前綴
 - `2 / 3` 依 logo 狀態產生正式編號前綴
-- `4` 時自動寫入主管審核日期與 Charles 簽名檔
+- `4` 時自動寫入主管審核日期與 `dep_manager = 1` 員工簽名檔
 
 ## 12. 目前落地的更精準編號規則
 

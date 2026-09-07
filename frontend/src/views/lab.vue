@@ -755,7 +755,6 @@ const statusOptionMap = Object.fromEntries(statusOptions.map(item => [item.code,
 const statusSelectOptions = computed(() => (isSupervisorUser.value ? statusOptions : statusOptions.slice(0, 1)))
 const drawingAttachmentInput = ref(null)
 const customerSignatureInput = ref(null)
-const managerSignatureInput = ref(null)
 
 const todayStr = (() => {
   const d = new Date()
@@ -1098,7 +1097,6 @@ function createBlankLabForm() {
     customer_signature_file: null,
     manager_approval_checked: false,
     manager_approval_date: '',
-    manager_signature_file: null,
   },
 
   other_requirements: '',
@@ -1453,30 +1451,20 @@ function openAttachment(file) {
 }
 
 async function chooseApprovalSignature(kind) {
-  if (kind === 'manager' && !isSupervisorUser.value) {
-    ElMessage.warning('主管審核簽名檔需由主管上傳')
-    return
-  }
   if (!state.formId) {
     const ok = await saveDraftReal({ refresh: false })
     if (!ok || !state.formId) {
-      ElMessage.warning('請先儲存委託單後再上傳簽名檔')
+      ElMessage.warning('請先儲存委託單後再上傳委託方簽名檔')
       return
     }
   }
   if (kind === 'customer') customerSignatureInput.value?.click()
-  if (kind === 'manager') managerSignatureInput.value?.click()
 }
 
 async function uploadApprovalSignature(kind, event) {
   const file = event?.target?.files?.[0]
   if (event?.target) event.target.value = ''
   if (!file || !state.formId) return
-  if (kind === 'manager' && !isSupervisorUser.value) {
-    ElMessage.warning('主管審核簽名檔需由主管上傳')
-    return
-  }
-
   signatureState.uploading = kind
   try {
     const fd = new FormData()
@@ -1500,11 +1488,6 @@ async function uploadApprovalSignature(kind, event) {
       form.approval.customer_signature_file = savedFile
       form.approval.customer_signature_checked = true
       if (!form.approval.customer_signature_date) form.approval.customer_signature_date = todayStr
-    }
-    if (kind === 'manager') {
-      form.approval.manager_signature_file = savedFile
-      form.approval.manager_approval_checked = true
-      if (!form.approval.manager_approval_date) form.approval.manager_approval_date = todayStr
     }
     await saveDraftReal()
     await loadDrawingAttachments()

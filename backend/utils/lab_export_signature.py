@@ -10,6 +10,8 @@ from docx import Document
 from docx.shared import Inches
 from flask import current_app
 
+DEFAULT_MANAGER_SIGNATURE_FILENAME = "Eeid_Charles-ch.jpg"
+
 
 def _signature_roots() -> list[Path]:
     candidates = []
@@ -32,7 +34,7 @@ def _signature_filename(values: Dict) -> str:
         reference = reference.get("name") or reference.get("path") or reference.get("url")
     text = str(reference or "").strip().replace("\\", "/")
     text = text.split("?", 1)[0].split("#", 1)[0]
-    return os.path.basename(text)
+    return os.path.basename(text) or DEFAULT_MANAGER_SIGNATURE_FILENAME
 
 
 def _find_signature(values: Dict) -> Optional[Path]:
@@ -148,9 +150,39 @@ def _normalize_entrust_number(docx_path: Path, form_id: str, values: Dict) -> No
 def _requires_manager_signature(values: Dict) -> bool:
     approval = values.get("approval") or {}
     return (
-        str(values.get("status_code") or values.get("status") or "").strip() in {"2", "3", "4"}
+        str(values.get("status_code") or values.get("status") or "").strip()
+        in {"2", "3", "4", "RECEIVED_LOGO", "RECEIVED_NOLOGO", "REVIEW_DONE"}
         or bool(approval.get("manager_approval_checked"))
     )
+
+
+def _signature_check(form_id: str) -> Dict:
+    values = _load_form_values(form_id)
+    workflow = _load_workflow_state(form_id)
+    if workflow.get("workflow_status") in {"RECEIVED_LOGO", "RECEIVED_NOLOGO", "REVIEW_DONE"}:
+        values = {**values, "status_code": workflow["workflow_status"]}
+    if workflow.get("workflow_status") == "REVIEW_DONE":
+        values = {**values, "manager_signature_file": DEFAULT_MANAGER_SIGNATURE_FILENAME}
+    required = _requires_manager_signature(values)
+    filename = _signature_filename(values) if required else ""
+    path = _find_signature({**values, "manager_signature_file": filename}) if filename else None
+    return {
+        "required": required,
+        "filename": filename,
+        "path": str(path) if path else "",
+        "checked": [str(root / filename) for root in _signature_roots()] if filename else [],
+    }
+
+
+def validate_manager_signature(form_id: str) -> Dict:
+    """Check the signature before an export builder creates a Word file."""
+    result = _signature_check(form_id)
+    if result["required"] and not result["path"]:
+        checked = ", ".join(result["checked"])
+        raise FileNotFoundError(
+            f"主管簽名檔尚未設定或不存在：{result['filename']}；已檢查：{checked}"
+        )
+    return result
 
 
 def _insert_signature(docx_path: Path, signature_path: Path) -> None:
@@ -199,18 +231,19 @@ def install_lab_export_signature(module, builder_name: str = "_make_export_docx"
         return
 
     def wrapped(form_id: str) -> Dict:
+        signature_check = validate_manager_signature(form_id)
         result = original(form_id)
         values = _load_form_values(form_id)
         if module.__name__.endswith("lab_forms") and builder_name == "_make_export_docx":
             out_path = Path(str(result.get("out_path") or ""))
             if out_path.is_file():
                 _normalize_entrust_number(out_path, form_id, values)
-        if not _requires_manager_signature(values):
+        if not signature_check["required"]:
             return result
 
-        signature_path = _find_signature(values)
-        if signature_path is None:
-            filename = _signature_filename(values) or "(未記錄主管簽名檔)"
+        signature_path = Path(signature_check["path"])
+        if not signature_check["path"]:
+            filename = signature_check["filename"] or "(未記錄主管簽名檔)"
             checked = ", ".join(str(root / filename) for root in _signature_roots())
             raise FileNotFoundError(f"找不到主管簽名檔，已檢查：{checked}")
 

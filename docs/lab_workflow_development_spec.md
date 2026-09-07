@@ -11,7 +11,7 @@
 - 一登入就先抓取登入者簽名檔
 - 依狀態自動帶入簽名檔與日期
 - 依 `有 logo / 無 logo` 與流程階段自動產生不同編號
-- 報告輸出時附上主管固定簽名
+- 報告輸出時由系統自動附上 Charles 固定主管簽名，不要求主管另行上傳
 
 ## 二、流程定義
 
@@ -94,9 +94,12 @@ select isnull(sign_e, sign_c) as signature from staff
 當主管選擇 `主管審核完成` 時：
 
 - 報告附上固定主管簽名
+- 不使用表單上傳的主管簽名檔
 - 固定檔案：
 
 `C:\inetpub\wwwroot\newweb2021\pic\itac\Eeid_Charles-ch.jpg`
+
+匯出前先檢查固定檔案是否存在；不存在時先警告並停止匯出，不得先產生 Word 再失敗。
 
 ## 五、後端 API 規格
 

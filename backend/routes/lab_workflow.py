@@ -6,6 +6,7 @@ from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
+from utils.lab_export_signature import validate_manager_signature
 
 try:
     from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
@@ -402,6 +403,19 @@ def current_signature():
             pass
 
 
+@bp.get("/workflow/signature-check/<form_id>")
+@jwt_required()
+def signature_check(form_id):
+    """Preflight the fixed supervisor signature before Word export."""
+    try:
+        result = validate_manager_signature(_safe_str(form_id))
+        return jsonify({"ok": True, "data": result})
+    except FileNotFoundError as exc:
+        return jsonify({"ok": False, "code": "MANAGER_SIGNATURE_MISSING", "msg": str(exc)}), 409
+    except Exception as exc:
+        return jsonify({"ok": False, "msg": str(exc)}), 500
+
+
 @bp.route("/workflow/form-status", methods=["POST"])
 @bp.route("/form-status", methods=["POST"])
 @jwt_required()
@@ -534,10 +548,12 @@ def update_form_status():
             cur.execute(
                 """
                 UPDATE dbo.lab_workflow_state
-                   SET workflow_reviewed_at = GETDATE()
+                   SET workflow_reviewed_at = GETDATE(),
+                       workflow_signature_file = ISNULL(workflow_signature_file, ?),
+                       workflow_signature_date = ISNULL(workflow_signature_date, CONVERT(date, GETDATE()))
                  WHERE CONVERT(varchar(36), form_id) = ?
                 """,
-                (form_id,),
+                ("Eeid_Charles-ch.jpg", form_id),
             )
         conn.commit()
         return jsonify({"ok": True, "data": {"form_id": form_id, "status": status, "has_logo": has_logo}})
